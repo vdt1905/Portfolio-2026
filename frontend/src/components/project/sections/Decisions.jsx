@@ -22,7 +22,7 @@ export default function Decisions({ data }) {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-40px" }}
             transition={{ delay: i * 0.05 }}
-            className="glass rounded-2xl p-6"
+            className="module holo-scan p-6"
           >
             <div className="mb-4 flex items-center gap-2">
               <span className="h-2 w-2 rounded-full" style={{ background: accent, boxShadow: `0 0 10px ${accent}` }} />

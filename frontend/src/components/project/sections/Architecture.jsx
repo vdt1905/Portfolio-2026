@@ -118,7 +118,7 @@ export default function Architecture({ data }) {
             exit={{ opacity: 0, height: 0 }}
             className="overflow-hidden"
           >
-            <div className="mt-2 flex items-start gap-3 rounded-2xl glass p-5">
+            <div className="mt-2 flex items-start gap-3 module holo-scan p-5">
               <ChevronRight size={16} className="mt-0.5 shrink-0" style={{ color: accent }} />
               <div>
                 <div className="font-display font-semibold">

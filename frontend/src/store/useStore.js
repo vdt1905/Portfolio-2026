@@ -65,9 +65,10 @@ export const useStore = create((set, get) => ({
   setQuality: (q) => set({ quality: q }),
 }));
 
-/** Per-quality tuning shared by the space/effects systems. */
+/** Per-quality tuning shared by the space/effects systems.
+ *  Deliberately restrained — the space environment is secondary to content. */
 export const QUALITY = {
-  high: { stars: 6000, galaxy: 3500, satellites: 12, nebula: 4, dust: 260, dpr: 1.8, effects: true, dof: true },
-  medium: { stars: 3200, galaxy: 1800, satellites: 6, nebula: 3, dust: 140, dpr: 1.4, effects: true, dof: false },
-  low: { stars: 1200, galaxy: 700, satellites: 0, nebula: 2, dust: 60, dpr: 1, effects: false, dof: false },
+  high: { stars: 4200, dust: 360, dpr: 1.8, effects: true, flyby: true },
+  medium: { stars: 2600, dust: 220, dpr: 1.4, effects: true, flyby: true },
+  low: { stars: 1300, dust: 90, dpr: 1, effects: false, flyby: false },
 };

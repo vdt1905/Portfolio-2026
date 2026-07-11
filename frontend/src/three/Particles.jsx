@@ -38,10 +38,10 @@ export default function Particles() {
         <bufferAttribute attach="attributes-position" args={[positions, 3]} />
       </bufferGeometry>
       <pointsMaterial
-        size={0.03}
-        color="#00e5ff"
+        size={0.02}
+        color="#aebdd6"
         transparent
-        opacity={0.5}
+        opacity={0.3}
         sizeAttenuation
         depthWrite={false}
         blending={THREE.AdditiveBlending}

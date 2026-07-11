@@ -41,7 +41,7 @@ export default function Resources({ data }) {
               transition={{ delay: i * 0.05 }}
               whileHover={disabled ? undefined : { y: -4 }}
               data-cursor={disabled ? undefined : "hover"}
-              className={`group flex items-center gap-4 rounded-2xl glass p-5 ${disabled ? "opacity-45" : ""}`}
+              className={`group flex items-center gap-4 module holo-scan p-5 ${disabled ? "opacity-45" : ""}`}
               onClick={(e) => disabled && e.preventDefault()}
             >
               <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl transition-transform group-hover:scale-110"

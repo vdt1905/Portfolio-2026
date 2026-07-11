@@ -23,7 +23,7 @@ export default function Roadmap({ data }) {
             viewport={{ once: true, margin: "-30px" }}
             transition={{ delay: i * 0.05 }}
             whileHover={{ y: -4 }}
-            className="group relative overflow-hidden rounded-2xl glass p-5"
+            className="group relative overflow-hidden module holo-scan p-5"
           >
             <div className="absolute -right-10 -top-10 h-28 w-28 rounded-full opacity-10 blur-2xl transition-opacity group-hover:opacity-25" style={{ background: accent }} />
             <div className="mb-2 flex items-center justify-between">

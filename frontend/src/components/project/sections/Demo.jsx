@@ -58,7 +58,7 @@ export default function Demo({ data }) {
       </div>
 
       {/* pipeline */}
-      <div className="glass rounded-2xl p-5">
+      <div className="module holo-scan p-5">
         <div className="space-y-2.5">
           {steps.map((s, i) => {
             const state = current > i ? "done" : current === i ? "active" : "idle";

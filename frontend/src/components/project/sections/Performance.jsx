@@ -25,7 +25,7 @@ export default function Performance({ data }) {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: i * 0.06 }}
-            className="glass rounded-2xl p-5"
+            className="module holo-scan p-5"
           >
             <div className="font-display text-3xl font-bold" style={{ color: accent }}>
               <Counter to={c.value} suffix={c.suffix} decimals={c.decimals || 0} />
@@ -37,7 +37,7 @@ export default function Performance({ data }) {
 
       <div className="mt-4 grid gap-4 lg:grid-cols-[1.4fr_1fr]">
         {/* commit activity */}
-        <div className="glass rounded-2xl p-5">
+        <div className="module holo-scan p-5">
           <div className="mb-4 font-mono text-[11px] uppercase tracking-widest text-muted">commit activity</div>
           <div className="flex h-32 items-end gap-1.5">
             {commits.map((v, i) => (
@@ -58,7 +58,7 @@ export default function Performance({ data }) {
         </div>
 
         {/* language breakdown */}
-        <div className="glass rounded-2xl p-5">
+        <div className="module holo-scan p-5">
           <div className="mb-4 font-mono text-[11px] uppercase tracking-widest text-muted">codebase</div>
           <div className="mb-4 flex h-2.5 overflow-hidden rounded-full">
             {languages.map((l) => (

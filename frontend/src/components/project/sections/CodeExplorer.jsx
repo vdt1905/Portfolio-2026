@@ -23,7 +23,7 @@ export default function CodeExplorer({ data }) {
 
       <div className="grid gap-4 lg:grid-cols-[240px_1fr]">
         {/* tree */}
-        <div className="glass rounded-2xl p-3 font-mono text-sm">
+        <div className="module holo-scan p-3 font-mono text-sm">
           <Tree nodes={tree} accent={accent} active={active} onPick={setActive} depth={0} />
         </div>
 
@@ -67,7 +67,7 @@ export default function CodeExplorer({ data }) {
                 </div>
               </motion.div>
             ) : (
-              <div className="grid h-full min-h-40 place-items-center rounded-2xl glass text-sm text-muted">
+              <div className="grid h-full min-h-40 place-items-center module holo-scan text-sm text-muted">
                 Select a highlighted file to view its code.
               </div>
             )}

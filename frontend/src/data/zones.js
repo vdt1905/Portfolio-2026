@@ -6,7 +6,7 @@ export const ZONES = {
   about: { id: "about", label: "About", hint: "Robot Assistant", icon: "Bot" },
   projects: { id: "projects", label: "Projects", hint: "Laptop", icon: "FolderGit2" },
   devops: { id: "devops", label: "DevOps Lab", hint: "Server Rack", icon: "Server" },
-  skills: { id: "skills", label: "Engineering Core", hint: "Holograms", icon: "Cpu" },
+  skills: { id: "skills", label: "Solar System", hint: "Holograms", icon: "Cpu" },
   terminal: { id: "terminal", label: "Terminal", hint: "Keyboard", icon: "SquareTerminal" },
   achievements: { id: "achievements", label: "Achievements", hint: "Trophies", icon: "Trophy" },
   contact: { id: "contact", label: "Contact", hint: "Console", icon: "Radio" },

@@ -1,31 +1,23 @@
-import { useMemo } from "react";
-import * as THREE from "three";
-import { EffectComposer, Bloom, Vignette, ChromaticAberration } from "@react-three/postprocessing";
-import { BlendFunction } from "postprocessing";
+import { EffectComposer, Bloom, Vignette, SMAA } from "@react-three/postprocessing";
 import { useStore } from "../store/useStore";
 
 /**
- * Post-processing stack — this is what sells the "neon" look.
- * Bloom makes every emissive material glow; vignette focuses the eye;
- * a whisper of chromatic aberration adds a lens/sci-fi quality.
- * Disabled on low-power devices to protect frame rate.
+ * Restrained post-processing — subtle by design:
+ *   · low-intensity Bloom (only bright emissives glow)
+ *   · very subtle Vignette to focus the eye
+ *   · SMAA for clean edges (cheaper than heavy MSAA)
+ * Tone mapping is ACES (renderer default). No chromatic aberration,
+ * no film grain, no motion blur. Disabled entirely on low quality.
  */
 export default function Effects() {
   const quality = useStore((s) => s.quality);
-  const offset = useMemo(() => new THREE.Vector2(0.0006, 0.0006), []);
   if (quality === "low") return null;
 
   return (
-    <EffectComposer disableNormalPass multisampling={4}>
-      <Bloom
-        intensity={0.9}
-        luminanceThreshold={0.35}
-        luminanceSmoothing={0.85}
-        mipmapBlur
-        radius={0.7}
-      />
-      <ChromaticAberration blendFunction={BlendFunction.NORMAL} offset={offset} />
-      <Vignette eskil={false} offset={0.25} darkness={0.85} />
+    <EffectComposer disableNormalPass multisampling={0}>
+      <Bloom intensity={0.5} luminanceThreshold={0.55} luminanceSmoothing={0.9} mipmapBlur radius={0.5} />
+      <Vignette offset={0.32} darkness={0.55} eskil={false} />
+      <SMAA />
     </EffectComposer>
   );
 }

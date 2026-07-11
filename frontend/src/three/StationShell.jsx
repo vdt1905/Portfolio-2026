@@ -38,14 +38,14 @@ function WindowWall() {
       {bar([0.08, H, 0.4], [0, 0, 0])}
       {bar([0.08, H, 0.4], [W / 4, 0, 0])}
       {bar([W, 0.06, 0.4], [0, 0, 0])}
-      {/* glowing inner edge (transparent-OLED trim) */}
+      {/* soft OLED trim — subtle, not neon */}
       <mesh position={[0, H / 2 - 0.02, 0.26]}>
         <boxGeometry args={[W - 0.2, 0.02, 0.02]} />
-        <meshStandardMaterial color="#00e5ff" emissive="#00e5ff" emissiveIntensity={1.4} toneMapped={false} />
+        <meshStandardMaterial color="#00e5ff" emissive="#00e5ff" emissiveIntensity={0.7} toneMapped={false} />
       </mesh>
       <mesh position={[0, -H / 2 + 0.02, 0.26]}>
         <boxGeometry args={[W - 0.2, 0.02, 0.02]} />
-        <meshStandardMaterial color="#6c63ff" emissive="#6c63ff" emissiveIntensity={1.1} toneMapped={false} />
+        <meshStandardMaterial color="#6c63ff" emissive="#6c63ff" emissiveIntensity={0.55} toneMapped={false} />
       </mesh>
       {/* faint frosted glass suggestion */}
       <mesh position={[0, 0, 0.02]}>
@@ -65,15 +65,15 @@ function FloorGuides() {
     <group>
       {[-3.6, 3.6].map((x) => (
         <mesh key={x} position={[x, 0.02, -1]} rotation={[-Math.PI / 2, 0, 0]}>
-          <planeGeometry args={[0.06, 8]} />
-          <meshStandardMaterial color="#00e5ff" emissive="#00e5ff" emissiveIntensity={0.8} toneMapped={false} />
+          <planeGeometry args={[0.05, 8]} />
+          <meshStandardMaterial color="#3aa7c4" emissive="#00e5ff" emissiveIntensity={0.45} toneMapped={false} />
         </mesh>
       ))}
       {/* floor guide dots */}
       {[-3, -1.5, 0, 1.5, 3].map((z) => (
         <mesh key={z} position={[0, 0.02, z]} rotation={[-Math.PI / 2, 0, 0]}>
-          <circleGeometry args={[0.04, 12]} />
-          <meshStandardMaterial color="#6c63ff" emissive="#6c63ff" emissiveIntensity={0.9} toneMapped={false} />
+          <circleGeometry args={[0.035, 12]} />
+          <meshStandardMaterial color="#6c63ff" emissive="#6c63ff" emissiveIntensity={0.5} toneMapped={false} />
         </mesh>
       ))}
     </group>

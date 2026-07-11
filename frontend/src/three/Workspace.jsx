@@ -400,7 +400,7 @@ export default function Workspace() {
       </Hotspot>
 
       {/* ---------- interactive: ROBOT -> About ---------- */}
-      <Hotspot label="About Me" sublabel="say hi" onSelect={() => openZone("about")}
+      <Hotspot label="About Me" sublabel="fly my journey" onSelect={() => openZone("about")}
         position={[-4.2, 0, 0.6]} labelOffset={[0, 1.1, 0]} liftHeight={0.12}>
         <group scale={1.3}>
           <Robot />
@@ -409,7 +409,7 @@ export default function Workspace() {
 
       {/* ---------- interactive: HOLOGRAMS -> Skills ---------- */}
       <Float speed={2} rotationIntensity={0.4} floatIntensity={0.6}>
-        <Hotspot label="Engineering Core" sublabel="domains" onSelect={() => openZone("skills")}
+        <Hotspot label="Solar System" sublabel="explore skills" onSelect={() => openZone("skills")}
           position={[-1.9, DESK_Y + 1.4, 0.4]} labelOffset={[0, 1.1, 0]} liftHeight={0.15}>
           <Holograms />
         </Hotspot>

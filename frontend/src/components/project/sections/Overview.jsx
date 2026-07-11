@@ -29,7 +29,7 @@ export default function Overview({ data }) {
 
       <div className="mt-8 grid gap-3 sm:grid-cols-3">
         {meta.map((m, i) => (
-          <motion.div key={m.label} custom={i + 2} variants={item} initial="initial" animate="animate" className="glass rounded-2xl p-5">
+          <motion.div key={m.label} custom={i + 2} variants={item} initial="initial" animate="animate" className="module holo-scan p-5">
             <div className="mb-2 flex items-center gap-2 text-muted">
               <m.icon size={15} style={{ color: data.accent }} />
               <span className="font-mono text-[11px] uppercase tracking-widest">{m.label}</span>

@@ -347,6 +347,118 @@ h4,
   50% { opacity: 0.35; }
 }
 
+/* ============================================================
+   ENGINEERING MODULES — replaces generic rounded cards.
+   Chamfered panels, accent ticks, OLED scanlines. No border-radius.
+   ============================================================ */
+.console {
+  position: relative;
+  background: color-mix(in srgb, var(--surface) 74%, transparent);
+  backdrop-filter: blur(30px) saturate(140%);
+  border: 1px solid var(--glass-border);
+  clip-path: polygon(0 0, calc(100% - 22px) 0, 100% 22px, 100% 100%, 22px 100%, 0 calc(100% - 22px));
+}
+.module {
+  --mc: #00e5ff;
+  position: relative;
+  background: linear-gradient(180deg,
+    color-mix(in srgb, var(--surface) 58%, transparent),
+    color-mix(in srgb, var(--void) 45%, transparent));
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(12px);
+  clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px));
+  transition: border-color 0.25s, background 0.25s, transform 0.25s;
+}
+.module::before {
+  content: "";
+  position: absolute; top: 0; left: 0;
+  width: 34px; height: 2px;
+  background: var(--mc);
+  box-shadow: 0 0 10px var(--mc);
+}
+.module::after {
+  content: "";
+  position: absolute; right: 3px; bottom: 3px;
+  width: 8px; height: 8px;
+  border-right: 1px solid color-mix(in srgb, var(--mc) 55%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--mc) 55%, transparent);
+}
+.module:hover { border-color: color-mix(in srgb, var(--mc) 45%, transparent); }
+.module--lit {
+  border-color: color-mix(in srgb, var(--mc) 42%, transparent);
+  background: color-mix(in srgb, var(--mc) 7%, transparent);
+}
+/* OLED scanline film */
+.holo-scan::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 1;
+  clip-path: inherit;
+  background: repeating-linear-gradient(0deg, transparent 0 3px, rgba(255, 255, 255, 0.018) 3px 4px);
+  mix-blend-mode: overlay;
+}
+.mono-id {
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* HUD gauge (stats) */
+.gauge { --mc: #00e5ff; position: relative; padding: 16px; }
+.gauge::before { content: ""; position: absolute; left: 0; top: 12px; bottom: 12px; width: 2px; background: var(--mc); box-shadow: 0 0 10px var(--mc); }
+
+/* trophy capsule — mechanical lid slides up on hover */
+.capsule {
+  --mc: #00e5ff; position: relative; overflow: hidden;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--surface) 55%, transparent), color-mix(in srgb, var(--void) 40%, transparent));
+  border: 1px solid var(--glass-border);
+  clip-path: polygon(0 10px, 10px 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%);
+}
+.capsule__lid {
+  position: absolute; inset: 0 0 auto 0; height: 42%;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--mc) 14%, var(--surface)), transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--mc) 40%, transparent);
+  transform: translateY(0);
+  transition: transform 0.5s cubic-bezier(0.7, 0, 0.2, 1);
+}
+.capsule:hover .capsule__lid { transform: translateY(-100%); }
+.capsule__seam { position: absolute; left: 12px; right: 12px; top: 42%; height: 1px; background: color-mix(in srgb, var(--mc) 30%, transparent); }
+
+/* comms transmission panel */
+.transmit {
+  --mc: #00e5ff; position: relative; overflow: hidden;
+  background: linear-gradient(120deg, color-mix(in srgb, var(--mc) 8%, transparent), color-mix(in srgb, var(--surface) 55%, transparent));
+  border: 1px solid var(--glass-border);
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%);
+}
+.transmit::after {
+  content: ""; position: absolute; left: -60%; top: 0; bottom: 0; width: 40%;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--mc) 22%, transparent), transparent);
+  transform: skewX(-18deg); opacity: 0; transition: opacity 0.3s;
+}
+.transmit:hover::after { opacity: 1; animation: transmit-sweep 0.9s ease; }
+@keyframes transmit-sweep { from { left: -60%; } to { left: 120%; } }
+
+/* orbital timeline checkpoint */
+.checkpoint {
+  --mc: #00e5ff; position: relative;
+  background: color-mix(in srgb, var(--surface) 45%, transparent);
+  border: 1px solid var(--glass-border);
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+  transition: border-color 0.25s, background 0.25s;
+}
+.checkpoint:hover { border-color: color-mix(in srgb, var(--mc) 50%, transparent); background: color-mix(in srgb, var(--mc) 6%, transparent); }
+
+/* resume printer */
+.printer-slot {
+  position: relative; height: 10px; border-radius: 2px;
+  background: #05070c;
+  box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.8), 0 0 0 1px var(--glass-border);
+}
+.printer-sheet {
+  position: absolute; left: 8%; right: 8%; top: 100%;
+  border: 1px solid color-mix(in srgb, var(--cyan) 30%, transparent);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
+  backdrop-filter: blur(6px);
+}
+
 /* mission-control HUD panel with corner brackets */
 .hud-bracket {
   position: relative;
@@ -462,6 +574,46 @@ h4,
 @keyframes term-blink {
   0%, 50% { opacity: 1; }
   50.01%, 100% { opacity: 0; }
+}
+
+/* Solar system — holographic approach labels */
+.holo-label {
+  --pc: #00e5ff;
+  padding: 3px 11px;
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  color: #fff;
+  background: color-mix(in srgb, var(--pc) 12%, rgba(6, 9, 14, 0.8));
+  border: 1px solid color-mix(in srgb, var(--pc) 55%, transparent);
+  box-shadow: 0 0 22px -6px var(--pc);
+  backdrop-filter: blur(6px);
+  animation: holo-in 0.3s ease both;
+}
+.holo-label--star {
+  --pc: #8cf8ff;
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+@keyframes holo-in {
+  from { opacity: 0; transform: translateY(6px) scale(0.9); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.holo-panel {
+  position: relative;
+  border-color: color-mix(in srgb, var(--pc) 35%, var(--glass-border)) !important;
+  box-shadow: 0 0 60px -30px var(--pc), 0 30px 80px -30px rgba(0, 0, 0, 0.8);
+}
+.holo-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--pc) 8%, transparent), transparent 40%);
+  pointer-events: none;
 }
 
 /* Engineering Core — real tech-logo coin on each orbiting sphere */

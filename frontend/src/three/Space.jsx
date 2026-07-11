@@ -1,243 +1,244 @@
 import { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
-import { Stars } from "@react-three/drei";
 import * as THREE from "three";
 import { useStore, QUALITY } from "../store/useStore";
-import { glowTexture, nebulaTexture, gasGiantTexture, moonTexture } from "./spaceTextures";
+import { earthTextures, moonTextures, glowTexture, nebulaTexture } from "./spaceTextures";
 
 /**
- * A living deep-space environment surrounding the orbital station.
- * Everything here ignores scene fog and moves very slowly to sell the
- * illusion of orbit. Counts scale with the adaptive quality setting.
+ * NEXUS ORBIT — a calm, photoreal deep-space view through the station
+ * windows. Deliberately sparse: one hero planet, one moon, one faint
+ * nebula, one distant galaxy, an almost-static starfield, rare flybys.
+ * Negative space is part of the design. Nothing competes with content.
  */
+// hero planet sits high on the left, well behind the window — partial, small
+const PLANET_POS = [-34, 10, -92];
+
 export default function Space() {
   const quality = useStore((s) => s.quality);
   const q = QUALITY[quality] || QUALITY.high;
-
   return (
     <group>
-      {/* deep starfield — two layers for depth */}
-      <Stars radius={140} depth={70} count={q.stars} factor={4} saturation={0} fade speed={0.4} />
-      <TwinkleLayer count={Math.round(q.stars / 6)} />
-
-      <GalaxyBand count={q.galaxy} />
-      <Nebulae count={q.nebula} />
-
-      <DistantSun />
-      <Planet position={[-46, 9, -78]} radius={15} texture="gas" atmo="#6c63ff" speed={0.012} />
-      <Planet position={[58, -8, -96]} radius={8} texture="rock" atmo="#00e5ff" speed={0.02} />
-      <Planet position={[24, 15, -44]} radius={3.4} texture="moon" atmo="#8cf8ff" speed={0.03} />
-
-      {q.satellites > 0 && <Satellites count={q.satellites} />}
-      <ShootingStars />
+      <SunLight />
+      <StarField count={Math.round(q.stars * 0.66)} minR={95} maxR={185} sizeMin={0.5} sizeMax={2.1} />
+      <StarField count={Math.round(q.stars * 0.34)} minR={60} maxR={110} sizeMin={0.9} sizeMax={3.0} />
+      <FaintNebula position={[46, 18, -125]} scale={[135, 92]} color="#3a4560" opacity={0.07} />
+      <FaintNebula position={[-70, -20, -140]} scale={[120, 80]} color="#2f4a52" opacity={0.05} />
+      <DistantGalaxy />
+      <HeroPlanet />
+      <Moon />
+      <FarPlanet />
+      {q.flyby && <SatelliteFlyby />}
     </group>
   );
 }
 
-/* ---------- bright twinkling stars ---------- */
-function TwinkleLayer({ count = 800 }) {
-  const ref = useRef();
-  const positions = useMemo(() => {
-    const a = new Float32Array(count * 3);
-    for (let i = 0; i < count; i++) {
-      const r = 60 + Math.random() * 90;
-      const th = Math.random() * Math.PI * 2;
-      const ph = Math.acos(2 * Math.random() - 1);
-      a[i * 3] = r * Math.sin(ph) * Math.cos(th);
-      a[i * 3 + 1] = r * Math.cos(ph);
-      a[i * 3 + 2] = r * Math.sin(ph) * Math.sin(th);
-    }
-    return a;
-  }, [count]);
-  useFrame((s) => {
-    if (ref.current) ref.current.material.size = 0.5 + Math.sin(s.clock.elapsedTime * 2) * 0.12;
-  });
-  return (
-    <points ref={ref}>
-      <bufferGeometry>
-        <bufferAttribute attach="attributes-position" args={[positions, 3]} />
-      </bufferGeometry>
-      <pointsMaterial color="#cfefff" size={0.5} sizeAttenuation transparent opacity={0.85} depthWrite={false} fog={false} />
-    </points>
-  );
+/* ---------- soft sunlight (no visible disk, no flare) ---------- */
+function SunLight() {
+  return <directionalLight position={[72, 32, -12]} intensity={2.2} color="#fff4e6" />;
 }
 
-/* ---------- Milky Way band ---------- */
-function GalaxyBand({ count = 3500 }) {
-  const g = useRef();
-  const { positions, colors } = useMemo(() => {
+/* ---------- physically-plausible starfield (per-star size/color, faint twinkle) ---------- */
+function StarField({ count, minR, maxR, sizeMin, sizeMax }) {
+  const { geometry, material } = useMemo(() => {
     const positions = new Float32Array(count * 3);
     const colors = new Float32Array(count * 3);
-    const palette = [new THREE.Color("#ffffff"), new THREE.Color("#8cf8ff"), new THREE.Color("#6c63ff"), new THREE.Color("#ffd166")];
+    const sizes = new Float32Array(count);
+    const phases = new Float32Array(count);
+    const palette = [[1, 1, 1], [0.78, 0.86, 1.0], [1.0, 0.92, 0.82]]; // white · blue-white · warm
     for (let i = 0; i < count; i++) {
-      const R = 70 + Math.random() * 70;
-      const lon = Math.random() * Math.PI * 2;
-      const lat = (Math.random() - 0.5) * 0.5 * Math.pow(Math.random(), 2); // concentrate near band
-      positions[i * 3] = R * Math.cos(lat) * Math.cos(lon);
-      positions[i * 3 + 1] = R * Math.sin(lat);
-      positions[i * 3 + 2] = R * Math.cos(lat) * Math.sin(lon);
-      const c = palette[Math.random() < 0.7 ? 0 : 1 + (Math.random() * 3 | 0)];
-      colors[i * 3] = c.r; colors[i * 3 + 1] = c.g; colors[i * 3 + 2] = c.b;
+      const r = minR + Math.random() * (maxR - minR);
+      const th = Math.random() * Math.PI * 2;
+      const ph = Math.acos(2 * Math.random() - 1);
+      positions[i * 3] = r * Math.sin(ph) * Math.cos(th);
+      positions[i * 3 + 1] = r * Math.cos(ph);
+      positions[i * 3 + 2] = r * Math.sin(ph) * Math.sin(th);
+      const pick = Math.random();
+      const c = pick < 0.72 ? palette[0] : pick < 0.9 ? palette[1] : palette[2];
+      const b = 0.45 + Math.random() * 0.55;
+      colors[i * 3] = c[0] * b; colors[i * 3 + 1] = c[1] * b; colors[i * 3 + 2] = c[2] * b;
+      sizes[i] = sizeMin + Math.pow(Math.random(), 3) * (sizeMax - sizeMin);
+      phases[i] = Math.random() * Math.PI * 2;
     }
-    return { positions, colors };
-  }, [count]);
-  useFrame((_, d) => { if (g.current) g.current.rotation.y += d * 0.005; });
-  return (
-    <group ref={g} rotation={[0.5, 0, 0.35]}>
-      <points>
-        <bufferGeometry>
-          <bufferAttribute attach="attributes-position" args={[positions, 3]} />
-          <bufferAttribute attach="attributes-color" args={[colors, 3]} />
-        </bufferGeometry>
-        <pointsMaterial size={0.45} sizeAttenuation vertexColors transparent opacity={0.7} depthWrite={false} blending={THREE.AdditiveBlending} fog={false} />
-      </points>
-    </group>
-  );
-}
-
-/* ---------- nebula clouds ---------- */
-function Nebulae({ count = 4 }) {
-  const specs = useMemo(() => {
-    const colors = ["#6c63ff", "#00e5ff", "#123a6a", "#2a1a5a"];
-    return Array.from({ length: count }, (_, i) => ({
-      tex: nebulaTexture(colors[i % colors.length]),
-      pos: [(Math.random() - 0.5) * 160, (Math.random() - 0.3) * 60, -60 - Math.random() * 60],
-      scale: 60 + Math.random() * 60,
-      rot: Math.random() * Math.PI,
-    }));
-  }, [count]);
-  const ref = useRef();
-  useFrame((_, d) => { if (ref.current) ref.current.rotation.z += d * 0.003; });
-  return (
-    <group ref={ref}>
-      {specs.map((s, i) => (
-        <sprite key={i} position={s.pos} scale={[s.scale, s.scale, 1]}>
-          <spriteMaterial map={s.tex} transparent opacity={0.5} depthWrite={false} blending={THREE.AdditiveBlending} fog={false} />
-        </sprite>
-      ))}
-    </group>
-  );
-}
-
-/* ---------- distant sun ---------- */
-function DistantSun() {
-  const glow = useMemo(() => glowTexture("#fff4d6", 0.35), []);
-  return (
-    <group position={[90, 34, -130]}>
-      <directionalLight position={[0, 0, 0]} target-position={[-90, -34, 130]} intensity={1.6} color="#fff2d0" />
-      <sprite scale={[70, 70, 1]}>
-        <spriteMaterial map={glow} transparent opacity={0.9} depthWrite={false} blending={THREE.AdditiveBlending} fog={false} />
-      </sprite>
-      <mesh>
-        <sphereGeometry args={[8, 24, 24]} />
-        <meshBasicMaterial color="#fff6e0" fog={false} toneMapped={false} />
-      </mesh>
-    </group>
-  );
-}
-
-/* ---------- planets & moon ---------- */
-function Planet({ position, radius, texture, atmo, speed }) {
-  const ref = useRef();
-  const map = useMemo(() => {
-    if (texture === "gas") return gasGiantTexture("#233156", "#6c63ff");
-    if (texture === "moon") return moonTexture();
-    return gasGiantTexture("#0e3550", "#00e5ff");
-  }, [texture]);
-  const glow = useMemo(() => glowTexture(atmo, 0.5), [atmo]);
-  useFrame((_, d) => { if (ref.current) ref.current.rotation.y += d * speed; });
-  return (
-    <group position={position}>
-      {/* atmospheric glow behind */}
-      <sprite scale={[radius * 2.7, radius * 2.7, 1]}>
-        <spriteMaterial map={glow} transparent opacity={0.6} depthWrite={false} blending={THREE.AdditiveBlending} fog={false} />
-      </sprite>
-      <mesh ref={ref}>
-        <sphereGeometry args={[radius, 48, 48]} />
-        <meshStandardMaterial map={map} roughness={0.9} metalness={0.05} emissive={atmo} emissiveIntensity={0.06} fog={false} />
-      </mesh>
-    </group>
-  );
-}
-
-/* ---------- orbiting satellites ---------- */
-function Satellites({ count = 12 }) {
-  const specs = useMemo(() =>
-    Array.from({ length: count }, () => ({
-      r: 9 + Math.random() * 10,
-      speed: (Math.random() > 0.5 ? 1 : -1) * (0.04 + Math.random() * 0.05),
-      incl: (Math.random() - 0.5) * 1.2,
-      phase: Math.random() * Math.PI * 2,
-      y: (Math.random() - 0.5) * 6,
-    })), [count]);
-  const refs = useRef([]);
-  useFrame((s) => {
-    specs.forEach((sp, i) => {
-      const t = s.clock.elapsedTime * sp.speed + sp.phase;
-      const m = refs.current[i];
-      if (!m) return;
-      m.position.set(Math.cos(t) * sp.r, sp.y + Math.sin(t) * sp.r * Math.sin(sp.incl), Math.sin(t) * sp.r);
-      m.rotation.y = t;
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+    geometry.setAttribute("aColor", new THREE.BufferAttribute(colors, 3));
+    geometry.setAttribute("aSize", new THREE.BufferAttribute(sizes, 1));
+    geometry.setAttribute("aPhase", new THREE.BufferAttribute(phases, 1));
+    const material = new THREE.ShaderMaterial({
+      uniforms: { uTime: { value: 0 }, uScale: { value: 280 * (typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1) } },
+      vertexShader: `
+        attribute vec3 aColor; attribute float aSize; attribute float aPhase;
+        uniform float uTime; uniform float uScale; varying vec3 vColor;
+        void main() {
+          vColor = aColor;
+          vec4 mv = modelViewMatrix * vec4(position, 1.0);
+          float tw = 0.93 + 0.07 * sin(uTime * 0.5 + aPhase);
+          gl_PointSize = aSize * uScale * tw / -mv.z;
+          gl_Position = projectionMatrix * mv;
+        }`,
+      fragmentShader: `
+        varying vec3 vColor;
+        void main() {
+          float d = length(gl_PointCoord - 0.5);
+          float a = smoothstep(0.5, 0.06, d);
+          gl_FragColor = vec4(vColor, a);
+        }`,
+      transparent: true, depthWrite: false, fog: false,
     });
+    return { geometry, material };
+  }, [count, minR, maxR, sizeMin, sizeMax]);
+
+  useFrame((s) => { material.uniforms.uTime.value = s.clock.elapsedTime; });
+  return <points geometry={geometry} material={material} />;
+}
+
+/* ---------- Fresnel atmosphere ---------- */
+function Atmosphere({ radius, color, power = 3.2, intensity = 1.0 }) {
+  const mat = useMemo(() => new THREE.ShaderMaterial({
+    uniforms: { uColor: { value: new THREE.Color(color) }, uPower: { value: power }, uIntensity: { value: intensity } },
+    vertexShader: `varying vec3 vN; varying vec3 vP;
+      void main(){ vN = normalize(normalMatrix*normal); vec4 mv = modelViewMatrix*vec4(position,1.0); vP = mv.xyz; gl_Position = projectionMatrix*mv; }`,
+    fragmentShader: `varying vec3 vN; varying vec3 vP; uniform vec3 uColor; uniform float uPower; uniform float uIntensity;
+      void main(){ vec3 v = normalize(-vP); float f = pow(1.0 - max(dot(vN,v),0.0), uPower); gl_FragColor = vec4(uColor*f*uIntensity, f); }`,
+    transparent: true, blending: THREE.AdditiveBlending, side: THREE.BackSide, depthWrite: false, fog: false,
+  }), [color, power, intensity]);
+  return (
+    <mesh scale={radius * 1.035}>
+      <sphereGeometry args={[1, 48, 48]} />
+      <primitive object={mat} attach="material" />
+    </mesh>
+  );
+}
+
+/* ---------- hero planet (Earth-like, offset to one side, near-imperceptible spin) ---------- */
+function HeroPlanet() {
+  const surf = useRef();
+  const cloud = useRef();
+  const t = useMemo(() => earthTextures(768, 384), []);
+  const R = 12;
+  useFrame((_, d) => {
+    if (surf.current) surf.current.rotation.y += d * 0.006;
+    if (cloud.current) cloud.current.rotation.y += d * 0.0085;
   });
   return (
-    <group>
-      {specs.map((_, i) => (
-        <group key={i} ref={(el) => (refs.current[i] = el)}>
-          <mesh>
-            <boxGeometry args={[0.18, 0.18, 0.3]} />
-            <meshStandardMaterial color="#1a2030" metalness={0.7} roughness={0.4} fog={false} />
-          </mesh>
-          {[-0.28, 0.28].map((x) => (
-            <mesh key={x} position={[x, 0, 0]}>
-              <boxGeometry args={[0.34, 0.02, 0.2]} />
-              <meshStandardMaterial color="#06263a" emissive="#00e5ff" emissiveIntensity={0.5} fog={false} toneMapped={false} />
-            </mesh>
-          ))}
-        </group>
-      ))}
+    <group position={PLANET_POS} rotation={[0.32, 0, 0.14]}>
+      <Atmosphere radius={R} color="#7fb5ff" power={7} intensity={0.35} />
+      <mesh ref={surf}>
+        <sphereGeometry args={[R, 96, 96]} />
+        {/* dimmed + desaturated so it recedes behind the content */}
+        <meshStandardMaterial
+          map={t.map} normalMap={t.normalMap} normalScale={[0.45, 0.45]}
+          roughnessMap={t.roughnessMap} roughness={1} metalness={0}
+          color="#c2cad6"
+          emissiveMap={t.night} emissive="#ffcf8c" emissiveIntensity={0.55}
+          fog={false}
+        />
+      </mesh>
+      <mesh ref={cloud} scale={1.014}>
+        <sphereGeometry args={[R, 64, 64]} />
+        <meshStandardMaterial map={t.clouds} transparent opacity={0.85} depthWrite={false} roughness={1} metalness={0} color="#d6dde6" fog={false} />
+      </mesh>
     </group>
   );
 }
 
-/* ---------- shooting stars ---------- */
-function ShootingStars() {
-  const streaks = useRef([
-    { active: false, next: 6 },
-    { active: false, next: 18 },
-  ]);
-  const refs = useRef([]);
+/* ---------- distant second planet (small, dim, far corner) ---------- */
+function FarPlanet() {
+  const surf = useRef();
+  const t = useMemo(() => moonTextures(), []);
+  const R = 6;
+  useFrame((_, d) => { if (surf.current) surf.current.rotation.y += d * 0.008; });
+  return (
+    <group position={[74, 22, -158]} rotation={[0.2, 0, 0.1]}>
+      <mesh ref={surf}>
+        <sphereGeometry args={[R, 48, 48]} />
+        <meshStandardMaterial map={t.map} normalMap={t.normalMap} normalScale={[0.5, 0.5]} color="#9c6a4a" roughness={1} metalness={0} fog={false} />
+      </mesh>
+    </group>
+  );
+}
+
+/* ---------- moon (slow orbit around the planet, drifts behind station beams) ---------- */
+function Moon() {
+  const g = useRef();
+  const surf = useRef();
+  const t = useMemo(() => moonTextures(), []);
+  const R = 2.4, orbit = 26;
   useFrame((s, d) => {
-    streaks.current.forEach((st, i) => {
-      const m = refs.current[i];
-      if (!m) return;
-      if (!st.active) {
-        st.next -= d;
-        if (st.next <= 0) {
-          st.active = true;
-          st.life = 0;
-          st.start = new THREE.Vector3((Math.random() - 0.5) * 120, 20 + Math.random() * 30, -40 - Math.random() * 40);
-          st.dir = new THREE.Vector3(-1 - Math.random(), -0.5 - Math.random() * 0.5, 0).normalize().multiplyScalar(60);
-          m.visible = true;
-          m.position.copy(st.start);
-          m.lookAt(st.start.clone().add(st.dir));
-        }
-      } else {
-        st.life += d;
-        m.position.addScaledVector(st.dir, d);
-        m.material.opacity = Math.max(0, 1 - st.life * 0.7);
-        if (st.life > 1.4) { st.active = false; st.next = 20 + Math.random() * 12; m.visible = false; }
-      }
-    });
+    const a = s.clock.elapsedTime * 0.02;
+    if (g.current) g.current.position.set(
+      PLANET_POS[0] + Math.cos(a) * orbit,
+      PLANET_POS[1] + 4 + Math.sin(a) * orbit * 0.22,
+      PLANET_POS[2] + Math.sin(a) * orbit
+    );
+    if (surf.current) surf.current.rotation.y += d * 0.02;
   });
   return (
-    <>
-      {[0, 1].map((i) => (
-        <mesh key={i} ref={(el) => (refs.current[i] = el)} visible={false}>
-          <boxGeometry args={[0.05, 0.05, 4]} />
-          <meshBasicMaterial color="#8cf8ff" transparent opacity={1} depthWrite={false} blending={THREE.AdditiveBlending} fog={false} toneMapped={false} />
+    <group ref={g}>
+      <mesh ref={surf}>
+        <sphereGeometry args={[R, 48, 48]} />
+        <meshStandardMaterial map={t.map} normalMap={t.normalMap} normalScale={[0.9, 0.9]} color="#c8ccd4" roughness={1} metalness={0} fog={false} />
+      </mesh>
+    </group>
+  );
+}
+
+/* ---------- faint blue-gray nebulae (< 10% opacity, non-glowing) ---------- */
+function FaintNebula({ position, scale, color, opacity }) {
+  const tex = useMemo(() => nebulaTexture(color), [color]);
+  return (
+    <sprite position={position} scale={[scale[0], scale[1], 1]}>
+      <spriteMaterial map={tex} transparent opacity={opacity} depthWrite={false} fog={false} />
+    </sprite>
+  );
+}
+
+/* ---------- one tiny distant galaxy (only if you look) ---------- */
+function DistantGalaxy() {
+  const tex = useMemo(() => glowTexture("#c4ccdf", 0.4), []);
+  return (
+    <sprite position={[74, 40, -155]} scale={[7, 2.6, 1]}>
+      <spriteMaterial map={tex} transparent opacity={0.42} rotation={0.5} depthWrite={false} blending={THREE.AdditiveBlending} fog={false} />
+    </sprite>
+  );
+}
+
+/* ---------- rare, slow satellite flyby (one at a time, minutes apart) ---------- */
+function SatelliteFlyby() {
+  const g = useRef();
+  const st = useRef({ active: false, next: 35 + Math.random() * 35, t: 0, dir: 1, y: 0, z: -28 });
+  useFrame((s, d) => {
+    const o = st.current, m = g.current;
+    if (!m) return;
+    if (!o.active) {
+      m.visible = false;
+      o.next -= d;
+      if (o.next <= 0) {
+        o.active = true; o.t = 0;
+        o.dir = Math.random() > 0.5 ? 1 : -1;
+        o.y = (Math.random() - 0.5) * 16;
+        o.z = -26 - Math.random() * 22;
+      }
+    } else {
+      m.visible = true;
+      o.t += d;
+      const dur = 75, p = o.t / dur;
+      const x = -o.dir * 36 + o.dir * 72 * p;
+      m.position.set(x, o.y, o.z);
+      m.rotation.y += d * 0.04;
+      if (p >= 1) { o.active = false; o.next = 130 + Math.random() * 120; m.visible = false; }
+    }
+  });
+  return (
+    <group ref={g} visible={false} scale={0.6}>
+      <mesh><boxGeometry args={[0.4, 0.4, 0.7]} /><meshStandardMaterial color="#20283a" metalness={0.7} roughness={0.4} fog={false} /></mesh>
+      {[-0.7, 0.7].map((x) => (
+        <mesh key={x} position={[x, 0, 0]}>
+          <boxGeometry args={[0.8, 0.03, 0.5]} />
+          <meshStandardMaterial color="#0a2740" emissive="#2b6cff" emissiveIntensity={0.35} fog={false} toneMapped={false} />
         </mesh>
       ))}
-    </>
+      <mesh position={[0, 0.32, 0]}><boxGeometry args={[0.05, 0.32, 0.05]} /><meshStandardMaterial color="#2a2f3a" fog={false} /></mesh>
+    </group>
   );
 }

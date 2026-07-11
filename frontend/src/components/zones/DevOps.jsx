@@ -23,10 +23,9 @@ export default function DevOps() {
               transition={{ delay: i * 0.1 }}
               className="flex items-center"
             >
-              <div className="relative w-32 rounded-xl glass p-4 text-center">
+              <div className="module holo-scan relative w-32 p-4 text-center" style={{ "--mc": "#00ffb2" }}>
                 <div className="font-display text-sm font-semibold text-success">{s.stage}</div>
                 <div className="mt-1 text-[11px] text-muted">{s.detail}</div>
-                {/* flowing packet */}
               </div>
               {i < pipeline.length - 1 && (
                 <div className="relative mx-1 h-px w-8 bg-white/10">
@@ -83,7 +82,7 @@ export default function DevOps() {
       </div>
 
       {/* logs */}
-      <div className="mt-6 rounded-xl border border-white/8 bg-black/40 p-4 font-mono text-xs leading-6">
+      <div className="module holo-scan mt-6 bg-black/40 p-4 font-mono text-xs leading-6" style={{ "--mc": "#00ffb2" }}>
         <span className="text-muted">$ docker compose up -d --build</span>
         <div className="text-white/60">{"[+] Building 12.4s ... => exporting layers"}</div>
         <div className="text-white/60">✔ Container api      Started</div>
@@ -102,7 +101,7 @@ export default function DevOps() {
 
 function Panel({ icon: Icon, title, accent, children }) {
   return (
-    <div className="glass rounded-xl p-5">
+    <div className="module holo-scan p-5" style={{ "--mc": accent }}>
       <div className="mb-3 flex items-center gap-2 text-sm font-semibold" style={{ color: accent }}>
         <Icon size={15} /> {title}
       </div>

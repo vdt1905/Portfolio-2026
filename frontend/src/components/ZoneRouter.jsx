@@ -4,10 +4,10 @@ import { useStore } from "../store/useStore";
 
 // Lazy-load zones so heavy deps (three.js in Engineering Core, prism in
 // Terminal) stay out of the initial bundle and load on demand.
-const About = lazy(() => import("./zones/About"));
+const About = lazy(() => import("./journey/SpaceJourney"));
 const Projects = lazy(() => import("./zones/Projects"));
 const DevOps = lazy(() => import("./zones/DevOps"));
-const EngineeringCore = lazy(() => import("./zones/EngineeringCore"));
+const SolarSystem = lazy(() => import("./solar/SolarSystem"));
 const Terminal = lazy(() => import("./zones/Terminal"));
 const Achievements = lazy(() => import("./zones/Achievements"));
 const Contact = lazy(() => import("./zones/Contact"));
@@ -16,7 +16,7 @@ const MAP = {
   about: About,
   projects: Projects,
   devops: DevOps,
-  skills: EngineeringCore,
+  skills: SolarSystem,
   terminal: Terminal,
   achievements: Achievements,
   contact: Contact,
