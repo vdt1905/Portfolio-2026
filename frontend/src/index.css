@@ -361,32 +361,85 @@ h4,
 .module {
   --mc: #00e5ff;
   position: relative;
-  background: linear-gradient(180deg,
-    color-mix(in srgb, var(--surface) 58%, transparent),
-    color-mix(in srgb, var(--void) 45%, transparent));
-  border: 1px solid var(--glass-border);
+  background: linear-gradient(160deg,
+    color-mix(in srgb, var(--surface) 60%, transparent),
+    color-mix(in srgb, var(--void) 52%, transparent));
+  border: 1px solid color-mix(in srgb, var(--mc) 34%, var(--glass-border));
   backdrop-filter: blur(12px);
-  clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px));
-  transition: border-color 0.25s, background 0.25s, transform 0.25s;
+  clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 16px 100%, 0 calc(100% - 16px));
+  box-shadow: 0 0 26px -14px var(--mc), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  transition: border-color 0.25s, box-shadow 0.25s, transform 0.25s;
 }
+/* glowing corner brackets on the two square corners (TL + BR) */
 .module::before {
-  content: "";
-  position: absolute; top: 0; left: 0;
-  width: 34px; height: 2px;
-  background: var(--mc);
-  box-shadow: 0 0 10px var(--mc);
+  content: ""; position: absolute; inset: 6px; pointer-events: none;
+  background:
+    linear-gradient(var(--mc), var(--mc)) 0 0 / 14px 2px no-repeat,
+    linear-gradient(var(--mc), var(--mc)) 0 0 / 2px 14px no-repeat,
+    linear-gradient(var(--mc), var(--mc)) 100% 100% / 14px 2px no-repeat,
+    linear-gradient(var(--mc), var(--mc)) 100% 100% / 2px 14px no-repeat;
+  filter: drop-shadow(0 0 3px color-mix(in srgb, var(--mc) 70%, transparent));
+  opacity: 0.9;
 }
-.module::after {
-  content: "";
-  position: absolute; right: 3px; bottom: 3px;
-  width: 8px; height: 8px;
-  border-right: 1px solid color-mix(in srgb, var(--mc) 55%, transparent);
-  border-bottom: 1px solid color-mix(in srgb, var(--mc) 55%, transparent);
+.module:hover {
+  border-color: color-mix(in srgb, var(--mc) 58%, transparent);
+  box-shadow: 0 0 32px -8px var(--mc), inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
-.module:hover { border-color: color-mix(in srgb, var(--mc) 45%, transparent); }
 .module--lit {
-  border-color: color-mix(in srgb, var(--mc) 42%, transparent);
-  background: color-mix(in srgb, var(--mc) 7%, transparent);
+  border-color: color-mix(in srgb, var(--mc) 50%, transparent);
+  background: color-mix(in srgb, var(--mc) 8%, transparent);
+}
+
+/* ---- full-frame HUD card (flagship, matches the mission-console look) ---- */
+.hud-card {
+  --mc: #00e5ff;
+  position: relative;
+  padding: 1.5px;
+  clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 18px 100%, 0 calc(100% - 18px));
+  background: linear-gradient(150deg,
+    color-mix(in srgb, var(--mc) 85%, transparent) 0%,
+    color-mix(in srgb, var(--mc) 20%, transparent) 45%,
+    color-mix(in srgb, var(--mc) 60%, transparent) 100%);
+  box-shadow: 0 0 34px -12px var(--mc);
+  transition: box-shadow 0.3s, transform 0.3s;
+}
+.hud-card:hover { box-shadow: 0 0 46px -8px var(--mc); }
+.hud-card__panel {
+  position: relative; height: 100%; overflow: hidden;
+  clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 18px 100%, 0 calc(100% - 18px));
+  background: linear-gradient(150deg, #0b1119 0%, #05080d 100%);
+}
+.hud-card__panel::before {
+  content: ""; position: absolute; inset: 8px; pointer-events: none; z-index: 3;
+  background:
+    linear-gradient(var(--mc), var(--mc)) 0 0 / 16px 2px no-repeat,
+    linear-gradient(var(--mc), var(--mc)) 0 0 / 2px 16px no-repeat,
+    linear-gradient(var(--mc), var(--mc)) 100% 100% / 16px 2px no-repeat,
+    linear-gradient(var(--mc), var(--mc)) 100% 100% / 2px 16px no-repeat;
+  filter: drop-shadow(0 0 4px var(--mc));
+}
+.hud-foot {
+  display: flex; align-items: stretch;
+  border-top: 1px solid color-mix(in srgb, var(--mc) 30%, transparent);
+  background: color-mix(in srgb, var(--mc) 6%, transparent);
+}
+.hud-foot > * {
+  flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 12px; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+  color: color-mix(in srgb, var(--mc) 90%, white 10%);
+  transition: background 0.2s, color 0.2s;
+}
+.hud-foot > * + * { border-left: 1px solid color-mix(in srgb, var(--mc) 24%, transparent); }
+.hud-foot > *:hover { background: color-mix(in srgb, var(--mc) 16%, transparent); color: #fff; }
+.tech-box {
+  display: grid; place-items: center; width: 42px; height: 42px;
+  background: color-mix(in srgb, var(--void) 55%, transparent);
+  border: 1px solid color-mix(in srgb, var(--mc, #00e5ff) 30%, var(--glass-border));
+  clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px));
+}
+.hud-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
 }
 /* OLED scanline film */
 .holo-scan::before {

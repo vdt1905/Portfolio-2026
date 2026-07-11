@@ -1,23 +1,21 @@
 import { useLayoutEffect, useRef } from "react";
 import { gsap } from "gsap";
-import { Boxes, ChevronRight, Radar } from "lucide-react";
+import { ArrowRight, Rocket } from "lucide-react";
 import Overlay from "../Overlay";
-import Tilt from "../ui/Tilt";
+import HudCard from "../ui/HudCard";
+import { BrandIcon, hasBrand } from "../../data/techIcons";
 import { projects } from "../../data/portfolio";
 import { caseStudies } from "../../data/caseStudies";
 import { useStore } from "../../store/useStore";
 
-/**
- * ZONE 4 — Project Museum, presented as classified Mission Modules.
- * Each dossier reveals mechanically; selecting one launches its case study.
- */
+/** ZONE 4 — Project missions as premium HUD console cards. */
 export default function Projects() {
   const openProject = useStore((s) => s.openProject);
   const scope = useRef(null);
 
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
-      gsap.from(".mission", { x: -26, opacity: 0, scaleX: 0.96, transformOrigin: "left center", duration: 0.6, stagger: 0.09, ease: "power3.out" });
+      gsap.from(".mission", { x: -24, opacity: 0, duration: 0.6, stagger: 0.09, ease: "power3.out" });
     }, scope);
     return () => ctx.revert();
   }, []);
@@ -25,58 +23,49 @@ export default function Projects() {
   return (
     <Overlay kicker="Zone 04 — Mission Archive" title="Engineering Missions" accent="#00e5ff">
       <p className="mb-8 max-w-xl text-muted">
-        Classified engineering dossiers. Each mission unfolds its architecture, decisions,
-        challenges, and a live simulated run. Select one to deploy.
+        Classified engineering dossiers. Each mission carries its architecture, decisions,
+        challenges, and a live simulated run. Launch one to deploy.
       </p>
 
-      <div ref={scope} className="grid gap-4 md:grid-cols-2" style={{ perspective: 1200 }}>
-        {projects.map((p, i) => {
+      <div ref={scope} className="grid gap-5 md:grid-cols-2" style={{ perspective: 1400 }}>
+        {projects.map((p) => {
           const cs = caseStudies[p.id];
           return (
-            <Tilt
-              key={p.id}
-              max={6}
-              onClick={() => openProject(p.id)}
-              data-cursor="hover"
-              className="mission module holo-scan group cursor-pointer p-5"
-              style={{ "--mc": p.accent }}
-            >
-              {/* dossier header */}
-              <div className="flex items-center justify-between">
-                <span className="mono-id flex items-center gap-2">
-                  <Radar size={12} style={{ color: p.accent }} />
-                  MSN-{String(i + 1).padStart(3, "0")}
-                </span>
-                <span className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-widest" style={{ color: p.accent }}>
-                  <span className="h-1.5 w-1.5 rounded-full" style={{ background: p.accent, boxShadow: `0 0 6px ${p.accent}` }} />
-                  {cs?.status || "Archived"}
-                </span>
-              </div>
-
-              <div className="mt-3 h-px w-full" style={{ background: `linear-gradient(90deg, ${p.accent}55, transparent)` }} />
-
-              <h3 className="mt-3 font-display text-2xl font-semibold">{p.name}</h3>
-              <div className="mono-id mt-0.5" style={{ color: p.accent }}>{p.tag}</div>
-              <p className="mt-2 text-sm leading-relaxed text-white/75">{cs?.mission || p.summary}</p>
-
-              {/* tech slats */}
-              <div className="mt-4 flex flex-wrap gap-x-3 gap-y-1 font-mono text-[10px] uppercase tracking-wider text-muted">
-                {p.tech.slice(0, 5).map((t, k) => (
-                  <span key={t} className="flex items-center gap-3">
-                    {k > 0 && <span className="text-white/15">/</span>}
-                    {t}
+            <div key={p.id} className="mission">
+              <HudCard
+                accent={p.accent}
+                tilt
+                kicker="Project"
+                title={p.name}
+                subtitle={p.tag}
+                badge={
+                  <span className="hud-badge" style={{ color: cs?.status?.toLowerCase().includes("live") ? "#00ffb2" : p.accent }}>
+                    <span className="h-1.5 w-1.5 rounded-full" style={{ background: "currentColor", boxShadow: "0 0 6px currentColor" }} />
+                    {cs?.status || "Archived"}
                   </span>
-                ))}
-              </div>
+                }
+                actions={[
+                  { label: "View mission", onClick: () => openProject(p.id) },
+                  { label: "Launch", icon: <Rocket size={13} />, onClick: () => openProject(p.id) },
+                ]}
+              >
+                <div className="mono-id mb-1" style={{ color: p.accent }}>Mission overview</div>
+                <p className="text-sm leading-relaxed text-white/75">{cs?.mission || p.summary}</p>
 
-              {/* deploy footer */}
-              <div className="mt-5 flex items-center justify-between border-t border-white/6 pt-3">
-                <span className="flex items-center gap-2 text-sm font-medium" style={{ color: p.accent }}>
-                  <Boxes size={15} /> Open dossier
-                </span>
-                <ChevronRight size={16} className="text-muted transition-transform group-hover:translate-x-1" style={{ color: p.accent }} />
-              </div>
-            </Tilt>
+                <div className="mono-id mb-2 mt-4">Tech stack</div>
+                <div className="flex flex-wrap gap-2">
+                  {p.tech.slice(0, 5).map((t) => (
+                    <span key={t} className="tech-box" style={{ "--mc": p.accent }} title={t}>
+                      {hasBrand(t) ? <BrandIcon name={t} size={22} /> : (
+                        <span className="font-mono text-[10px] font-semibold" style={{ color: p.accent }}>
+                          {t.replace(/[^A-Za-z0-9]/g, "").slice(0, 3).toUpperCase()}
+                        </span>
+                      )}
+                    </span>
+                  ))}
+                </div>
+              </HudCard>
+            </div>
           );
         })}
       </div>

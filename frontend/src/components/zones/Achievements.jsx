@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Trophy, Star, BadgeCheck, Activity } from "lucide-react";
 import Overlay from "../Overlay";
+import HudCard from "../ui/HudCard";
 import { achievements, stats, certifications } from "../../data/portfolio";
 
 const KIND = { trophy: Trophy, star: Star, badge: BadgeCheck };
@@ -44,36 +45,30 @@ export default function Achievements() {
         ))}
       </div>
 
-      {/* trophy capsules */}
-      <div className="mb-3 mt-8 mono-id text-cyan">◈ Honors — hover to unseal</div>
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {/* honor cards */}
+      <div className="mb-3 mt-8 mono-id text-cyan">◈ Honors</div>
+      <div className="grid gap-4 sm:grid-cols-2">
         {achievements.map((a, i) => {
           const Icon = KIND[a.kind] || Trophy;
           const accent = i % 2 ? "#6c63ff" : "#00e5ff";
           return (
-            <motion.div
-              key={a.title}
-              initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}
-              className="capsule holo-scan min-h-[184px]" style={{ "--mc": accent }}
-            >
-              {/* medallion hidden under the lid */}
-              <div className="absolute inset-x-0 top-0 z-[1] grid h-[42%] place-items-center">
-                <div className="float-y grid h-12 w-12 place-items-center rounded-full border" style={{ borderColor: `${accent}55`, background: `${accent}12`, color: accent }}>
-                  <Icon size={22} />
+            <motion.div key={a.title} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}>
+              <HudCard
+                accent={accent}
+                kicker="Achievement"
+                title={a.title}
+                subtitle={a.org}
+                badge={
+                  <span className="tech-box float-y" style={{ "--mc": accent, width: 40, height: 40 }}>
+                    <Icon size={19} style={{ color: accent }} />
+                  </span>
+                }
+              >
+                <div className="flex items-center justify-between border-t border-white/6 pt-3">
+                  <span className="mono-id">Recorded</span>
+                  <span className="font-mono text-lg font-bold" style={{ color: accent }}>{a.year}</span>
                 </div>
-              </div>
-              <div className="capsule__lid z-[3]">
-                <div className="grid h-full place-items-center">
-                  <span className="mono-id" style={{ color: accent }}>SEALED</span>
-                </div>
-              </div>
-              <div className="capsule__seam z-[4]" />
-              {/* revealed record */}
-              <div className="relative z-[2] mt-[42%] p-4 text-center">
-                <div className="font-display text-sm font-semibold leading-tight">{a.title}</div>
-                <div className="mt-1 text-xs text-muted">{a.org}</div>
-                <div className="mt-1 font-mono text-[10px]" style={{ color: accent }}>{a.year}</div>
-              </div>
+              </HudCard>
             </motion.div>
           );
         })}
