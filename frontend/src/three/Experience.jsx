@@ -28,6 +28,7 @@ export default function Experience() {
     >
       <Canvas
         dpr={[1, maxDpr]}
+        frameloop={receded ? "never" : "always"}
         gl={{ antialias: true, powerPreference: "high-performance", alpha: false }}
         camera={{ fov: 42, near: 0.1, far: 260, position: [0, 2.4, 16] }}
         onCreated={({ gl }) => gl.setClearColor("#02040A")}
