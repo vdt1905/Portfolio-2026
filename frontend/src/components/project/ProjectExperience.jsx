@@ -24,8 +24,7 @@ const SECTIONS = [
   { id: "journey", label: "Journey", C: Journey },
   { id: "challenges", label: "Challenges", C: Challenges },
   { id: "performance", label: "Performance", C: Performance },
-  { id: "code", label: "Code Explorer", C: CodeExplorer },
-  { id: "demo", label: "Demo", C: Demo },
+  
   { id: "roadmap", label: "Roadmap", C: Roadmap },
   { id: "resources", label: "Resources", C: Resources },
 ];

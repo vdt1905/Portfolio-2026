@@ -12,7 +12,8 @@ import { PLANETS, DOCKER, GIT_BELT, STAR, STATUS_COLOR } from "../../data/solarS
 import { planetTexture } from "../../three/planetTextures";
 
 const ALL = [...PLANETS, DOCKER, GIT_BELT];
-const SYSTEM_CAM = { x: 0, y: 24, z: 62 };
+const SYSTEM_CAM = { x: 0, y: 30, z: 72 };
+const ORBIT_FLATTEN = 0.72;
 
 /* real tech logo per world (Simple Icons + lucide fallbacks) */
 const LOGO = {
@@ -22,12 +23,12 @@ const LOGO = {
 };
 
 /** Glowing brand logo billboarded on a planet — its identity. */
-function PlanetLogo({ id, color, size }) {
+function PlanetLogo({ id, color, size, compact = false }) {
   const Icon = LOGO[id];
   if (!Icon) return null;
   return (
-    <Html center distanceFactor={size * 9} position={[0, 0, 0]} style={{ pointerEvents: "none" }} zIndexRange={[16, 0]}>
-      <Icon size={50} color={color} style={{ filter: `drop-shadow(0 0 12px ${color}) drop-shadow(0 0 4px ${color})`, opacity: 0.97 }} />
+    <Html center distanceFactor={size * (compact ? 13 : 9)} position={[0, compact ? size * 0.02 : 0, 0]} style={{ pointerEvents: "none" }} zIndexRange={[16, 0]}>
+      <Icon size={compact ? 38 : 50} color={color} style={{ filter: `drop-shadow(0 0 ${compact ? 8 : 12}px ${color}) drop-shadow(0 0 4px ${color})`, opacity: compact ? 0.7 : 0.97 }} />
     </Html>
   );
 }
@@ -194,7 +195,7 @@ function System({ focused, setFocused, hovered, setHovered }) {
       const frozen = focused === p.id || (p.moon && focused === p.moon);
       if (!frozen) angles.current[i] += d * p.orbitSpeed;
       const a = angles.current[i];
-      positions.current[i].set(Math.cos(a) * p.orbit, p.y || 0, Math.sin(a) * p.orbit);
+      positions.current[i].set(Math.cos(a) * p.orbit, p.y || 0, Math.sin(a) * p.orbit * ORBIT_FLATTEN);
     });
   });
 
@@ -208,9 +209,17 @@ function System({ focused, setFocused, hovered, setHovered }) {
   return (
     <>
       <ambientLight intensity={0.12} />
-      <pointLight position={[0, 0, 0]} intensity={120} color="#bfe6ff" distance={140} decay={1.4} />
+      <pointLight position={[0, 0, 0]} intensity={150} color="#bfe6ff" distance={150} decay={1.35} />
+      <directionalLight position={[-18, 12, 10]} intensity={1.2} color="#d7f8ff" />
       <Backdrop />
-      <Star />
+      <Star dimmed={Boolean(focused)} />
+
+      {!focused && (
+        <group position={[0, -0.02, 0]}>
+          {PLANETS.map((p) => <OrbitPath key={p.id} radius={p.orbit} color={p.accent} y={p.y || 0} />)}
+          <OrbitPath radius={GIT_BELT.radius} color={GIT_BELT.accent} y={0} opacity={0.14} />
+        </group>
+      )}
 
       {PLANETS.map((p, i) => (
         <Planet
@@ -230,8 +239,17 @@ function System({ focused, setFocused, hovered, setHovered }) {
   );
 }
 
+function OrbitPath({ radius, color, y = 0, opacity = 0.22 }) {
+  return (
+    <mesh position={[0, y, 0]} rotation={[Math.PI / 2, 0, 0]} scale={[1, ORBIT_FLATTEN, 1]}>
+      <ringGeometry args={[radius - 0.015, radius + 0.015, 192]} />
+      <meshBasicMaterial color={color} transparent opacity={opacity} side={THREE.DoubleSide} depthWrite={false} depthTest blending={THREE.AdditiveBlending} toneMapped={false} />
+    </mesh>
+  );
+}
+
 /* ---------- fusion-reactor star ---------- */
-function Star() {
+function Star({ dimmed = false }) {
   const core = useRef(), ringA = useRef(), ringB = useRef(), ringC = useRef();
   useFrame((s, d) => {
     const t = s.clock.elapsedTime;
@@ -242,23 +260,27 @@ function Star() {
   });
   const ringMat = <meshBasicMaterial color="#8cf8ff" transparent opacity={0.55} blending={THREE.AdditiveBlending} toneMapped={false} />;
   return (
-    <group>
+    <group scale={dimmed ? 0.72 : 1}>
       <mesh ref={core}>
-        <icosahedronGeometry args={[1, 3]} />
-        <meshBasicMaterial color="#eaffff" toneMapped={false} />
+        <sphereGeometry args={[2.35, 64, 64]} />
+        <meshBasicMaterial color={dimmed ? "#8fd9ff" : "#eaffff"} transparent opacity={dimmed ? 0.52 : 1} toneMapped={false} />
       </mesh>
       <mesh>
-        <sphereGeometry args={[3.4, 32, 32]} />
-        <meshBasicMaterial color="#3aa8ff" transparent opacity={0.12} blending={THREE.AdditiveBlending} toneMapped={false} />
+        <sphereGeometry args={[4.8, 48, 48]} />
+        <meshBasicMaterial color="#3aa8ff" transparent opacity={dimmed ? 0.055 : 0.16} blending={THREE.AdditiveBlending} toneMapped={false} depthWrite={false} />
+      </mesh>
+      <mesh>
+        <sphereGeometry args={[7.2, 48, 48]} />
+        <meshBasicMaterial color="#00e5ff" transparent opacity={dimmed ? 0.012 : 0.045} blending={THREE.AdditiveBlending} toneMapped={false} depthWrite={false} />
       </mesh>
       {/* plasma / magnetic rings */}
       <mesh ref={ringA} rotation={[Math.PI / 2, 0, 0]}><torusGeometry args={[4, 0.05, 12, 96]} />{ringMat}</mesh>
       <mesh ref={ringB} rotation={[0.6, 0.4, 0]}><torusGeometry args={[4.8, 0.03, 12, 96]} />{ringMat}</mesh>
       <mesh ref={ringC} rotation={[1.2, 0, 0.5]}><torusGeometry args={[5.6, 0.03, 12, 96]} />{ringMat}</mesh>
       <pointLight intensity={3} distance={30} color="#bfe6ff" />
-      <Html center distanceFactor={26} position={[0, 6.5, 0]} style={{ pointerEvents: "none" }}>
+      {!dimmed && <Html center distanceFactor={26} position={[0, 6.5, 0]} style={{ pointerEvents: "none" }}>
         <div className="holo-label holo-label--star">{STAR.name}</div>
-      </Html>
+      </Html>}
     </group>
   );
 }
@@ -268,20 +290,62 @@ function Atmosphere({ size, color, intensity = 0.9 }) {
   const mat = useMemo(() => new THREE.ShaderMaterial({
     uniforms: { uColor: { value: new THREE.Color(color) }, uIntensity: { value: intensity } },
     vertexShader: `varying vec3 vN; varying vec3 vP; void main(){ vN=normalize(normalMatrix*normal); vec4 mv=modelViewMatrix*vec4(position,1.0); vP=mv.xyz; gl_Position=projectionMatrix*mv; }`,
-    fragmentShader: `varying vec3 vN; varying vec3 vP; uniform vec3 uColor; uniform float uIntensity; void main(){ vec3 v=normalize(-vP); float f=pow(1.0-max(dot(vN,v),0.0),3.2); gl_FragColor=vec4(uColor*f*uIntensity,f); }`,
+    fragmentShader: `varying vec3 vN; varying vec3 vP; uniform vec3 uColor; uniform float uIntensity; void main(){ vec3 v=normalize(-vP); float f=pow(1.0-max(dot(vN,v),0.0),6.0); gl_FragColor=vec4(uColor*f*uIntensity,f*0.42); }`,
     transparent: true, blending: THREE.AdditiveBlending, side: THREE.BackSide, depthWrite: false,
   }), [color, intensity]);
-  return <mesh scale={size * 1.18}><sphereGeometry args={[1, 40, 40]} /><primitive object={mat} attach="material" /></mesh>;
+  return <mesh scale={size * 1.045}><sphereGeometry args={[1, 48, 48]} /><primitive object={mat} attach="material" /></mesh>;
+}
+
+function CloudLayer({ size, color, speed = 0.025 }) {
+  const mesh = useRef();
+  const texture = useMemo(() => {
+    const c = document.createElement("canvas");
+    c.width = 512;
+    c.height = 256;
+    const ctx = c.getContext("2d");
+    ctx.clearRect(0, 0, c.width, c.height);
+    for (let i = 0; i < 90; i++) {
+      const x = Math.random() * c.width;
+      const y = Math.random() * c.height;
+      const rx = 24 + Math.random() * 70;
+      const ry = 5 + Math.random() * 18;
+      const g = ctx.createRadialGradient(x, y, 0, x, y, rx);
+      g.addColorStop(0, "rgba(255,255,255,0.42)");
+      g.addColorStop(1, "rgba(255,255,255,0)");
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.ellipse(x, y, rx, ry, Math.random() * Math.PI, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    const tex = new THREE.CanvasTexture(c);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    tex.wrapS = THREE.RepeatWrapping;
+    return tex;
+  }, []);
+
+  useFrame((_, d) => {
+    if (mesh.current) mesh.current.rotation.y += d * speed;
+  });
+
+  return (
+    <mesh ref={mesh} scale={size * 1.025}>
+      <sphereGeometry args={[1, 48, 48]} />
+      <meshBasicMaterial map={texture} color={color} transparent opacity={0.28} depthWrite={false} blending={THREE.AdditiveBlending} toneMapped={false} />
+    </mesh>
+  );
 }
 
 /* ---------- a planet (+ optional Docker moon) ---------- */
 function Planet({ config, index, positions, dockerPos, focused, hovered, onHover, onClick, dockerFocused, dockerHovered, onDockerHover, onDockerClick }) {
-  const group = useRef(), surf = useRef();
+  const group = useRef(), surf = useRef(), shade = useRef(), focusRing = useRef();
   const t = useMemo(() => planetTexture(config.style, config), [config]);
   useFrame((_, d) => {
     if (group.current) group.current.position.copy(positions.current[index]);
     if (surf.current) surf.current.rotation.y += d * config.spin;
+    if (shade.current) shade.current.rotation.y -= d * 0.008;
+    if (focusRing.current) focusRing.current.rotation.z += d * 0.18;
   });
+  const hasClouds = ["react", "node", "python", "mongo"].includes(config.id);
   return (
     <group ref={group}>
       <mesh
@@ -291,22 +355,48 @@ function Planet({ config, index, positions, dockerPos, focused, hovered, onHover
         onClick={(e) => { e.stopPropagation(); onClick(config.id); }}
       >
         <sphereGeometry args={[config.size, 48, 48]} />
-        <meshStandardMaterial map={t.map} emissiveMap={t.night} emissive={config.accent} emissiveIntensity={0.3} roughness={0.92} metalness={0.25} />
+        <meshStandardMaterial map={t.map} emissiveMap={t.night} emissive={config.accent} emissiveIntensity={0.18} roughness={0.86} metalness={0.12} />
       </mesh>
 
-      <PlanetLogo id={config.id} color={config.accent} size={config.size} />
+      <mesh ref={shade} scale={config.size * 1.006} rotation={[0, Math.PI * 0.75, 0]}>
+        <sphereGeometry args={[1, 48, 48]} />
+        <meshBasicMaterial color="#02040A" transparent opacity={focused ? 0.08 : 0.16} depthWrite={false} />
+      </mesh>
+      {hasClouds && <CloudLayer size={config.size} color={config.accent} speed={config.spin * 0.6} />}
+      <Atmosphere size={config.size} color={config.accent} intensity={hovered || focused ? 0.95 : 0.42} />
+
+      {focused && <FocusHalo refObj={focusRing} size={config.size} color={config.accent} />}
+      {(hovered || focused) && <PlanetLogo id={config.id} color={config.accent} size={config.size} compact={focused} />}
       {config.rings && <PlanetRings size={config.size} color={config.accent} />}
       {config.sats > 0 && <Satellites count={config.sats} r={config.size * 1.8} color={config.accent} />}
 
       {config.moon === "docker" && (
-        <DockerMoon posRef={dockerPos} focused={dockerFocused} hovered={dockerHovered} onHover={onDockerHover} onClick={onDockerClick} />
+        <>
+          {!dockerFocused && <OrbitPath radius={DOCKER.orbit} color={DOCKER.accent} y={0.4} opacity={0.16} />}
+          <DockerMoon posRef={dockerPos} focused={dockerFocused} hovered={dockerHovered} onHover={onDockerHover} onClick={onDockerClick} />
+        </>
       )}
 
       {(hovered || focused) && (
         <Html center distanceFactor={16} position={[0, config.size + 1.1, 0]} style={{ pointerEvents: "none" }} zIndexRange={[20, 0]}>
-          <div className="holo-label" style={{ "--pc": config.accent }}>{config.name}</div>
+          <div className="holo-label" style={{ "--pc": config.accent, transform: focused ? "scale(0.9)" : "scale(1)" }}>{config.name}</div>
         </Html>
       )}
+    </group>
+  );
+}
+
+function FocusHalo({ refObj, size, color }) {
+  return (
+    <group ref={refObj} rotation={[Math.PI / 2.8, 0.2, 0.45]}>
+      <mesh>
+        <torusGeometry args={[size * 1.38, 0.012, 10, 128]} />
+        <meshBasicMaterial color={color} transparent opacity={0.48} blending={THREE.AdditiveBlending} depthWrite={false} toneMapped={false} />
+      </mesh>
+      <mesh rotation={[0.4, 0, 0]}>
+        <torusGeometry args={[size * 1.62, 0.006, 10, 128]} />
+        <meshBasicMaterial color="#ffffff" transparent opacity={0.18} blending={THREE.AdditiveBlending} depthWrite={false} toneMapped={false} />
+      </mesh>
     </group>
   );
 }
@@ -318,7 +408,7 @@ function DockerMoon({ posRef, focused, hovered, onHover, onClick }) {
   useFrame((_, d) => {
     if (!focused) angle.current += d * DOCKER.orbitSpeed;
     const a = angle.current;
-    if (g.current) { g.current.position.set(Math.cos(a) * DOCKER.orbit, 0.4, Math.sin(a) * DOCKER.orbit); g.current.getWorldPosition(posRef.current); }
+    if (g.current) { g.current.position.set(Math.cos(a) * DOCKER.orbit, 0.4, Math.sin(a) * DOCKER.orbit * 0.75); g.current.getWorldPosition(posRef.current); }
     if (surf.current) surf.current.rotation.y += d * DOCKER.spin;
   });
   return (
@@ -328,9 +418,10 @@ function DockerMoon({ posRef, focused, hovered, onHover, onClick }) {
         onPointerOut={() => onHover(null)}
         onClick={(e) => { e.stopPropagation(); onClick(DOCKER.id); }}>
         <sphereGeometry args={[DOCKER.size, 32, 32]} />
-        <meshStandardMaterial map={t.map} emissiveMap={t.night} emissive={DOCKER.accent} emissiveIntensity={0.35} roughness={0.8} metalness={0.3} />
+        <meshStandardMaterial map={t.map} emissiveMap={t.night} emissive={DOCKER.accent} emissiveIntensity={0.22} roughness={0.82} metalness={0.18} />
       </mesh>
-      <PlanetLogo id={DOCKER.id} color={DOCKER.accent} size={DOCKER.size} />
+      <Atmosphere size={DOCKER.size} color={DOCKER.accent} intensity={hovered || focused ? 0.9 : 0.38} />
+      {(hovered || focused) && <PlanetLogo id={DOCKER.id} color={DOCKER.accent} size={DOCKER.size} />}
       {(hovered || focused) && (
         <Html center distanceFactor={12} position={[0, DOCKER.size + 0.6, 0]} style={{ pointerEvents: "none" }}>
           <div className="holo-label" style={{ "--pc": DOCKER.accent }}>{DOCKER.name}</div>
@@ -343,8 +434,8 @@ function DockerMoon({ posRef, focused, hovered, onHover, onClick }) {
 function PlanetRings({ size, color }) {
   return (
     <group rotation={[Math.PI / 2.1, 0, 0.3]}>
-      <mesh><ringGeometry args={[size * 1.4, size * 2.0, 96]} /><meshBasicMaterial color={color} transparent opacity={0.22} side={THREE.DoubleSide} depthWrite={false} /></mesh>
-      <mesh><ringGeometry args={[size * 2.1, size * 2.4, 96]} /><meshBasicMaterial color={color} transparent opacity={0.12} side={THREE.DoubleSide} depthWrite={false} /></mesh>
+      <mesh><ringGeometry args={[size * 1.35, size * 1.95, 160]} /><meshBasicMaterial color={color} transparent opacity={0.24} side={THREE.DoubleSide} depthWrite={false} blending={THREE.AdditiveBlending} toneMapped={false} /></mesh>
+      <mesh><ringGeometry args={[size * 2.08, size * 2.38, 160]} /><meshBasicMaterial color="#ffffff" transparent opacity={0.1} side={THREE.DoubleSide} depthWrite={false} blending={THREE.AdditiveBlending} toneMapped={false} /></mesh>
     </group>
   );
 }
@@ -417,7 +508,11 @@ function Backdrop() {
     }
     const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.BufferAttribute(pos, 3)); return g;
   }, []);
-  return <points geometry={geo}><pointsMaterial size={0.5} color="#cfe0ff" transparent opacity={0.7} sizeAttenuation depthWrite={false} /></points>;
+  const stars = useRef();
+  useFrame((s) => {
+    if (stars.current) stars.current.material.opacity = 0.58 + Math.sin(s.clock.elapsedTime * 0.45) * 0.12;
+  });
+  return <points ref={stars} geometry={geo}><pointsMaterial size={0.5} color="#cfe0ff" transparent opacity={0.7} sizeAttenuation depthWrite={false} /></points>;
 }
 
 /* ---------- cinematic focus camera ---------- */
@@ -433,8 +528,13 @@ function CameraController({ focused, getFocus, controls }) {
     if (!focused) { camTo = SYSTEM_CAM; tarTo = { x: 0, y: 0, z: 0 }; }
     else {
       const { pos, size } = getFocus(focused);
-      const dir = pos.clone().normalize();
-      const cam = pos.clone().add(dir.multiplyScalar(size * 4.2)).add(new THREE.Vector3(0, size * 1.5, 0));
+      const radial = pos.clone().setY(0).normalize();
+      const tangent = new THREE.Vector3(-radial.z, 0, radial.x).normalize();
+      const cam = pos
+        .clone()
+        .add(radial.multiplyScalar(size * 5.2))
+        .add(tangent.multiplyScalar(size * 2.1))
+        .add(new THREE.Vector3(0, size * 1.65, 0));
       camTo = { x: cam.x, y: cam.y, z: cam.z };
       tarTo = { x: pos.x, y: pos.y, z: pos.z };
     }

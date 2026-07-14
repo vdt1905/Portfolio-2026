@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { projects } from "../data/portfolio";
 
 /**
  * Procedurally drawn monitor screens (no image assets needed).
@@ -103,5 +104,88 @@ export function linkedinScreen() {
       ctx.font = "13px sans-serif";
       ctx.fillText(t, 44, 187 + i * 40);
     });
+  });
+}
+
+export function projectsScreen() {
+  return make((ctx) => {
+    const accent = "#00e5ff";
+    const green = "#00ff9c";
+    const violet = "#6c63ff";
+
+    const gradient = ctx.createLinearGradient(0, 34, W, H);
+    gradient.addColorStop(0, "#06111d");
+    gradient.addColorStop(0.5, "#0b1027");
+    gradient.addColorStop(1, "#06150f");
+
+    base(ctx, accent);
+    ctx.fillText("~/projects.deck", 46, 22);
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 34, W, H - 34);
+
+    ctx.strokeStyle = "rgba(0,229,255,0.45)";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(14, 48, W - 28, H - 62);
+
+    ctx.fillStyle = accent;
+    ctx.font = "800 34px sans-serif";
+    ctx.fillText("PROJECTS", 28, 92);
+    ctx.fillStyle = "rgba(255,255,255,0.66)";
+    ctx.font = "13px monospace";
+    ctx.fillText("agentic AI • devops • full-stack systems", 30, 116);
+
+    const cardW = 214;
+    const cardH = 74;
+    projects.slice(0, 4).forEach((project, i) => {
+      const x = 30 + (i % 2) * 238;
+      const y = 146 + Math.floor(i / 2) * 88;
+      const color = project.accent || (i % 2 ? violet : green);
+
+      ctx.fillStyle = "rgba(255,255,255,0.055)";
+      ctx.fillRect(x, y, cardW, cardH);
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(x + 0.5, y + 0.5, cardW - 1, cardH - 1);
+
+      ctx.fillStyle = color;
+      ctx.fillRect(x, y, 5, cardH);
+      ctx.beginPath();
+      ctx.arc(x + 24, y + 24, 9, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "700 17px sans-serif";
+      ctx.fillText(project.name, x + 42, y + 27);
+      ctx.fillStyle = "rgba(220,235,255,0.72)";
+      ctx.font = "11px monospace";
+      ctx.fillText(project.tag.toUpperCase().slice(0, 28), x + 42, y + 46);
+
+      const lineY = y + 60;
+      project.tech.slice(0, 3).forEach((tech, j) => {
+        ctx.fillStyle = j === 0 ? color : "rgba(255,255,255,0.42)";
+        ctx.fillRect(x + 42 + j * 48, lineY, 34, 4);
+      });
+    });
+
+    ctx.strokeStyle = "rgba(0,255,156,0.48)";
+    ctx.lineWidth = 1;
+    [[410, 86], [454, 118], [420, 146], [470, 178]].forEach(([x, y], i, arr) => {
+      ctx.fillStyle = i % 2 ? green : accent;
+      ctx.beginPath();
+      ctx.arc(x, y, 5, 0, Math.PI * 2);
+      ctx.fill();
+      if (arr[i + 1]) {
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(arr[i + 1][0], arr[i + 1][1]);
+        ctx.stroke();
+      }
+    });
+
+    ctx.shadowColor = accent;
+    ctx.shadowBlur = 18;
+    ctx.strokeStyle = "rgba(0,229,255,0.9)";
+    ctx.strokeRect(1, 1, W - 2, H - 2);
+    ctx.shadowBlur = 0;
   });
 }

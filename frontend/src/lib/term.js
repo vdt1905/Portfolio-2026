@@ -24,7 +24,7 @@ export function resolveProject(term, projects) {
   if (!term) return null;
   const t = term.toLowerCase();
   const alias = {
-    hushrut: "shushrutai", shushrut: "shushrutai", shushrutai: "shushrutai", derma: "shushrutai",
+    shushrut: "shushrutai", shushrutai: "shushrutai", derma: "shushrutai",
     docling: "docling", doc: "docling",
     finagent: "finagent", fin: "finagent", finance: "finagent",
     innomate: "innomate", inno: "innomate",

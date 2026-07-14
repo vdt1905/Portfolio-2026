@@ -125,7 +125,7 @@ export const COMMANDS = {
           </span>
         )),
         L.spacer(),
-        L.node(<span className="text-white/70">Popular: <span className="text-cyan">about</span> · <span className="text-cyan">projects</span> · <span className="text-cyan">repos</span> · <span className="text-cyan">open hushrut</span> · <span className="text-cyan">recruiter</span></span>),
+        L.node(<span className="text-white/70">Popular: <span className="text-cyan">about</span> · <span className="text-cyan">projects</span> · <span className="text-cyan">repos</span> · <span className="text-cyan">open shushrut</span> · <span className="text-cyan">recruiter</span></span>),
         L.node(<span className="text-white/50">Full walkthrough: <span className="text-cyan">guide</span> · list files: <span className="text-cyan">ls</span> · detail: <span className="text-cyan">help &lt;command&gt;</span></span>),
       ];
     },
@@ -143,7 +143,7 @@ export const COMMANDS = {
       L.spacer(),
       L.accent("③ Try these to get a feel:", "#00e5ff"),
       L.node(<span className="text-white/70"><span className="text-cyan">recruiter</span> — the 30-second pitch</span>),
-      L.node(<span className="text-white/70"><span className="text-cyan">open hushrut</span> — enter a full case study</span>),
+      L.node(<span className="text-white/70"><span className="text-cyan">open shushrut</span> — enter a full case study</span>),
       L.node(<span className="text-white/70"><span className="text-cyan">repos</span> · <span className="text-cyan">stats</span> — live GitHub data</span>),
       L.node(<span className="text-white/70"><span className="text-cyan">assistant</span> what should I look at? — just ask</span>),
       L.spacer(),
@@ -232,7 +232,7 @@ export const COMMANDS = {
     args: () => projects.map((p) => p.id),
     run: (args, ctx) => {
       const id = resolveProject(args[0], projects);
-      if (!id) return [L.err("usage: architecture <hushrut|docling|finagent|innomate>")];
+      if (!id) return [L.err("usage: architecture <shushrut|docling|finagent|innomate>")];
       const p = projects.find((x) => x.id === id);
       const cs = caseStudies[id];
       ctx.navigate(() => ctx.actions.openProject(id), 800);
@@ -368,7 +368,7 @@ export const COMMANDS = {
     args: () => projects.map((p) => p.id),
     run: (args) => {
       const id = resolveProject(args[0], projects);
-      if (!id) return [L.err("usage: explain <hushrut|docling|finagent|innomate>")];
+      if (!id) return [L.err("usage: explain <shushrut|docling|finagent|innomate>")];
       const p = projects.find((x) => x.id === id); const cs = caseStudies[id];
       return [L.head(p.name), L.accent(cs.mission, p.accent), L.text(p.summary), L.spacer(),
         L.accent("why it's interesting", p.accent),
@@ -525,7 +525,7 @@ jobs:
     args: () => projects.map((p) => p.id),
     run: (args, ctx) => {
       const id = resolveProject(args[0], projects);
-      if (!id) return [L.err("usage: open <hushrut|docling|finagent|innomate>")];
+      if (!id) return [L.err("usage: open <shushrut|docling|finagent|innomate>")];
       const p = projects.find((x) => x.id === id);
       ctx.navigate(() => ctx.actions.openProject(id), 700);
       return [L.ok(`→ entering ${p.name} case study…`)];
@@ -560,7 +560,7 @@ jobs:
       L.spacer(), L.accent("proof of work", "#00e5ff"),
       ...projects.map((p) => L.node(<span><span style={{ color: p.accent }}>◈ {p.name}</span> <span className="text-white/40">— {caseStudies[p.id]?.mission}</span></span>)),
       L.spacer(),
-      L.node(<span>next: <span className="text-cyan">resume</span> · <span className="text-cyan">contact</span> · <span className="text-cyan">open hushrut</span></span>),
+      L.node(<span>next: <span className="text-cyan">resume</span> · <span className="text-cyan">contact</span> · <span className="text-cyan">open shushrut</span></span>),
     ],
   },
   assistant: {
@@ -571,9 +571,9 @@ jobs:
         L.muted("try: 'best project', 'devops', 'hire', 'ai'")];
       let a;
       if (/hire|recruit|job|available/.test(q)) a = "Vansh is open to SDE / DevOps roles. Run `recruiter` for the pitch, `resume` for the CV, `contact` to reach him.";
-      else if (/ai|agent|llm|gemini/.test(q)) a = "AI is his core: multi-agent systems on Gemini & LLMs — ShushrutAI, DocLing, FinAgent. Try `agents` or `open hushrut`.";
+      else if (/ai|agent|llm|gemini/.test(q)) a = "AI is his core: multi-agent systems on Gemini & LLMs — ShushrutAI, DocLing, FinAgent. Try `agents` or `open shushrut`.";
       else if (/devops|docker|deploy|ci/.test(q)) a = "Docker + Git in production; CI/CD actively learning. Try `docker`, `deploy`, or `ci`.";
-      else if (/best|favorite|proud/.test(q)) a = "ShushrutAI — an agentic dermatology platform (Gemini 2.0). Try `open hushrut`.";
+      else if (/best|favorite|proud/.test(q)) a = "ShushrutAI — an agentic dermatology platform (Gemini 2.0). Try `open shushrut`.";
       else if (/stack|tech|skill/.test(q)) a = "React · Node · Python · MongoDB · Docker. Run `stack` or `skills`.";
       else a = "I can route you anywhere. Try `help`, or ask about 'ai', 'devops', 'projects', or 'hiring'.";
       return [L.node(<span><span className="text-violet">◇ </span><span className="text-white/85">{a}</span></span>)];

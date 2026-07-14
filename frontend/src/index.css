@@ -352,38 +352,59 @@ h4,
    Chamfered panels, accent ticks, OLED scanlines. No border-radius.
    ============================================================ */
 .console {
+  --mc: var(--cyan);
   position: relative;
-  background: color-mix(in srgb, var(--surface) 74%, transparent);
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 78% 18%, color-mix(in srgb, var(--mc) 14%, transparent), transparent 32%),
+    linear-gradient(145deg, color-mix(in srgb, var(--surface) 88%, transparent), color-mix(in srgb, var(--void) 78%, transparent));
   backdrop-filter: blur(30px) saturate(140%);
-  border: 1px solid var(--glass-border);
+  border: 1px solid color-mix(in srgb, var(--mc) 30%, var(--glass-border));
   clip-path: polygon(0 0, calc(100% - 22px) 0, 100% 22px, 100% 100%, 22px 100%, 0 calc(100% - 22px));
+  box-shadow:
+    0 0 46px -28px var(--mc),
+    0 34px 120px -52px rgba(0, 0, 0, 0.95),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.035);
 }
 .module {
   --mc: #00e5ff;
   position: relative;
-  /* solid-ish frosted fill so we can skip per-card backdrop blur (expensive) */
-  background: linear-gradient(160deg,
-    color-mix(in srgb, var(--surface) 82%, transparent),
-    color-mix(in srgb, var(--void) 74%, transparent));
-  border: 1px solid color-mix(in srgb, var(--mc) 34%, var(--glass-border));
-  clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 16px 100%, 0 calc(100% - 16px));
-  box-shadow: 0 0 22px -14px var(--mc);
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 72% 18%, color-mix(in srgb, var(--mc) 16%, transparent), transparent 34%),
+    linear-gradient(150deg,
+      color-mix(in srgb, var(--surface) 88%, transparent) 0%,
+      color-mix(in srgb, var(--void) 78%, transparent) 58%,
+      color-mix(in srgb, var(--mc) 8%, var(--void)) 100%);
+  border: 1px solid color-mix(in srgb, var(--mc) 46%, var(--glass-border));
+  clip-path: polygon(0 0, calc(100% - 22px) 0, 100% 22px, 100% 100%, 22px 100%, 0 calc(100% - 22px));
+  box-shadow:
+    0 0 34px -18px var(--mc),
+    0 28px 80px -46px rgba(0, 0, 0, 0.95),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.035);
   transition: border-color 0.25s, box-shadow 0.25s, transform 0.25s;
 }
 /* glowing corner brackets on the two square corners (TL + BR) */
-.module::before {
-  content: ""; position: absolute; inset: 6px; pointer-events: none;
+.module::after,
+.console::after,
+.checkpoint::after,
+.transmit::before,
+.capsule::before {
+  content: ""; position: absolute; inset: 7px; pointer-events: none; z-index: 4;
   background:
-    linear-gradient(var(--mc), var(--mc)) 0 0 / 14px 2px no-repeat,
-    linear-gradient(var(--mc), var(--mc)) 0 0 / 2px 14px no-repeat,
-    linear-gradient(var(--mc), var(--mc)) 100% 100% / 14px 2px no-repeat,
-    linear-gradient(var(--mc), var(--mc)) 100% 100% / 2px 14px no-repeat;
-  filter: drop-shadow(0 0 3px color-mix(in srgb, var(--mc) 70%, transparent));
-  opacity: 0.9;
+    linear-gradient(var(--mc), var(--mc)) 0 0 / 18px 2px no-repeat,
+    linear-gradient(var(--mc), var(--mc)) 0 0 / 2px 18px no-repeat,
+    linear-gradient(var(--mc), var(--mc)) 100% 100% / 18px 2px no-repeat,
+    linear-gradient(var(--mc), var(--mc)) 100% 100% / 2px 18px no-repeat;
+  filter: drop-shadow(0 0 5px color-mix(in srgb, var(--mc) 75%, transparent));
+  opacity: 0.82;
 }
 .module:hover {
-  border-color: color-mix(in srgb, var(--mc) 58%, transparent);
-  box-shadow: 0 0 32px -8px var(--mc), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  border-color: color-mix(in srgb, var(--mc) 76%, transparent);
+  box-shadow:
+    0 0 44px -10px var(--mc),
+    0 34px 90px -48px rgba(0, 0, 0, 1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07);
 }
 .module--lit {
   border-color: color-mix(in srgb, var(--mc) 50%, transparent);
@@ -394,20 +415,22 @@ h4,
 .hud-card {
   --mc: #00e5ff;
   position: relative;
-  padding: 1.5px;
-  clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 18px 100%, 0 calc(100% - 18px));
-  background: linear-gradient(150deg,
-    color-mix(in srgb, var(--mc) 85%, transparent) 0%,
-    color-mix(in srgb, var(--mc) 20%, transparent) 45%,
-    color-mix(in srgb, var(--mc) 60%, transparent) 100%);
-  box-shadow: 0 0 34px -12px var(--mc);
+  padding: 1px;
+  clip-path: polygon(0 0, calc(100% - 24px) 0, 100% 24px, 100% 100%, 24px 100%, 0 calc(100% - 24px));
+  background:
+    linear-gradient(150deg, color-mix(in srgb, var(--mc) 92%, transparent), transparent 30%),
+    linear-gradient(330deg, color-mix(in srgb, var(--mc) 74%, transparent), transparent 36%),
+    color-mix(in srgb, var(--mc) 24%, transparent);
+  box-shadow: 0 0 42px -14px var(--mc), 0 30px 90px -45px rgba(0,0,0,0.95);
   transition: box-shadow 0.3s, transform 0.3s;
 }
 .hud-card:hover { box-shadow: 0 0 46px -8px var(--mc); }
 .hud-card__panel {
   position: relative; height: 100%; overflow: hidden;
-  clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 18px 100%, 0 calc(100% - 18px));
-  background: linear-gradient(150deg, #0b1119 0%, #05080d 100%);
+  clip-path: inherit;
+  background:
+    radial-gradient(circle at 74% 20%, color-mix(in srgb, var(--mc) 16%, transparent), transparent 34%),
+    linear-gradient(150deg, #0b1119 0%, #05080d 100%);
 }
 .hud-card__panel::before {
   content: ""; position: absolute; inset: 8px; pointer-events: none; z-index: 3;
@@ -445,7 +468,10 @@ h4,
 .holo-scan::before {
   content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 1;
   clip-path: inherit;
-  background: repeating-linear-gradient(0deg, transparent 0 3px, rgba(0, 0, 0, 0.06) 3px 4px);
+  background:
+    linear-gradient(115deg, transparent 0 42%, color-mix(in srgb, var(--mc, #00e5ff) 10%, transparent) 50%, transparent 58%),
+    repeating-linear-gradient(0deg, transparent 0 3px, rgba(0, 0, 0, 0.08) 3px 4px);
+  opacity: 0.72;
 }
 .mono-id {
   font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
@@ -459,9 +485,12 @@ h4,
 /* trophy capsule — mechanical lid slides up on hover */
 .capsule {
   --mc: #00e5ff; position: relative; overflow: hidden;
-  background: linear-gradient(180deg, color-mix(in srgb, var(--surface) 55%, transparent), color-mix(in srgb, var(--void) 40%, transparent));
-  border: 1px solid var(--glass-border);
-  clip-path: polygon(0 10px, 10px 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%);
+  background:
+    radial-gradient(circle at 78% 18%, color-mix(in srgb, var(--mc) 14%, transparent), transparent 34%),
+    linear-gradient(180deg, color-mix(in srgb, var(--surface) 70%, transparent), color-mix(in srgb, var(--void) 58%, transparent));
+  border: 1px solid color-mix(in srgb, var(--mc) 34%, var(--glass-border));
+  clip-path: polygon(0 14px, 14px 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%);
+  box-shadow: 0 0 30px -18px var(--mc);
 }
 .capsule__lid {
   position: absolute; inset: 0 0 auto 0; height: 42%;
@@ -476,9 +505,12 @@ h4,
 /* comms transmission panel */
 .transmit {
   --mc: #00e5ff; position: relative; overflow: hidden;
-  background: linear-gradient(120deg, color-mix(in srgb, var(--mc) 8%, transparent), color-mix(in srgb, var(--surface) 55%, transparent));
-  border: 1px solid var(--glass-border);
-  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%);
+  background:
+    radial-gradient(circle at 78% 18%, color-mix(in srgb, var(--mc) 16%, transparent), transparent 32%),
+    linear-gradient(120deg, color-mix(in srgb, var(--mc) 8%, transparent), color-mix(in srgb, var(--surface) 70%, transparent));
+  border: 1px solid color-mix(in srgb, var(--mc) 38%, var(--glass-border));
+  clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%);
+  box-shadow: 0 0 30px -18px var(--mc);
 }
 .transmit::after {
   content: ""; position: absolute; left: -60%; top: 0; bottom: 0; width: 40%;
@@ -491,9 +523,12 @@ h4,
 /* orbital timeline checkpoint */
 .checkpoint {
   --mc: #00e5ff; position: relative;
-  background: color-mix(in srgb, var(--surface) 45%, transparent);
-  border: 1px solid var(--glass-border);
-  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 78% 18%, color-mix(in srgb, var(--mc) 13%, transparent), transparent 34%),
+    color-mix(in srgb, var(--surface) 58%, transparent);
+  border: 1px solid color-mix(in srgb, var(--mc) 32%, var(--glass-border));
+  clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 16px 100%, 0 calc(100% - 16px));
   transition: border-color 0.25s, background 0.25s;
 }
 .checkpoint:hover { border-color: color-mix(in srgb, var(--mc) 50%, transparent); background: color-mix(in srgb, var(--mc) 6%, transparent); }

@@ -8,7 +8,7 @@ import Space from "./Space";
 import StationShell from "./StationShell";
 import { useStore } from "../store/useStore";
 import { socials } from "../data/portfolio";
-import { resumeScreen, githubScreen, linkedinScreen } from "./screenTextures";
+import { resumeScreen, githubScreen, linkedinScreen, projectsScreen } from "./screenTextures";
 
 const DESK_Y = 0.9;
 
@@ -42,28 +42,81 @@ function Screen({ texture, position, rotation, size = [1.5, 0.94] }) {
 }
 
 function Keyboard() {
+  const cursor = useRef();
+  const pulse = useRef();
+  const scan = useRef();
+
+  useFrame((s) => {
+    const t = s.clock.elapsedTime;
+    if (cursor.current) cursor.current.visible = Math.sin(t * 7) > 0;
+    if (pulse.current) pulse.current.material.emissiveIntensity = 0.35 + Math.sin(t * 3) * 0.18;
+    if (scan.current) scan.current.position.x = -0.48 + ((t * 0.35) % 0.96);
+  });
+
   return (
     <group>
-      <mesh>
-        <boxGeometry args={[1.5, 0.09, 0.5]} />
+      <mesh position={[0, 0, 0]}>
+        <boxGeometry args={[1.16, 0.09, 0.46]} />
         <meshStandardMaterial color="#0d0d10" metalness={0.5} roughness={0.5} />
       </mesh>
-      {/* key glow strip */}
-      <mesh position={[0, 0.055, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[1.4, 0.42]} />
+
+      <mesh ref={pulse} position={[0, 0.058, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[1.04, 0.36]} />
         <meshStandardMaterial
-          color="#020203"
+          color="#05080c"
           emissive="#00e5ff"
-          emissiveIntensity={0.25}
+          emissiveIntensity={0.35}
           toneMapped={false}
         />
       </mesh>
+
+      {Array.from({ length: 4 }).map((_, row) =>
+        Array.from({ length: 8 }).map((__, col) => (
+          <mesh key={`${row}-${col}`} position={[-0.4 + col * 0.115, 0.07, -0.14 + row * 0.085]}>
+            <boxGeometry args={[0.068, 0.018, 0.042]} />
+            <meshStandardMaterial
+              color="#111a20"
+              emissive={col === row * 2 ? "#00ff9c" : "#00e5ff"}
+              emissiveIntensity={col === row * 2 ? 0.75 : 0.16}
+              toneMapped={false}
+            />
+          </mesh>
+        ))
+      )}
+
+      <mesh ref={scan} position={[-0.55, 0.083, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[0.035, 0.34]} />
+        <meshStandardMaterial color="#00ff9c" emissive="#00ff9c" emissiveIntensity={1.4} transparent opacity={0.5} toneMapped={false} />
+      </mesh>
+
+      <group position={[0, 0.22, -0.34]} rotation={[-0.48, 0, 0]}>
+        <mesh>
+          <boxGeometry args={[0.98, 0.34, 0.035]} />
+          <meshStandardMaterial color="#070b10" metalness={0.55} roughness={0.35} />
+        </mesh>
+        <mesh position={[0, 0, 0.023]}>
+          <planeGeometry args={[0.9, 0.25]} />
+          <meshStandardMaterial color="#021014" emissive="#00e5ff" emissiveIntensity={0.22} toneMapped={false} />
+        </mesh>
+        {["$ npm run dev", "> vite ready", "open projects --all"].map((line, i) => (
+          <group key={line} position={[-0.34, 0.085 - i * 0.072, 0.045]}>
+            <mesh>
+              <boxGeometry args={[0.44 - i * 0.055, 0.016, 0.01]} />
+              <meshStandardMaterial color={i === 0 ? "#00ff9c" : "#00e5ff"} emissive={i === 0 ? "#00ff9c" : "#00e5ff"} emissiveIntensity={0.8 - i * 0.12} toneMapped={false} />
+            </mesh>
+          </group>
+        ))}
+        <mesh ref={cursor} position={[0.24, -0.06, 0.05]}>
+          <boxGeometry args={[0.03, 0.052, 0.012]} />
+          <meshStandardMaterial color="#ffffff" emissive="#00ff9c" emissiveIntensity={1.6} toneMapped={false} />
+        </mesh>
+      </group>
     </group>
   );
 }
 
 function Laptop() {
-  const tex = useMemo(() => resumeScreen(), []);
+  const tex = useMemo(() => projectsScreen(), []);
   return (
     <group>
       {/* base */}
@@ -80,9 +133,10 @@ function Laptop() {
         <mesh position={[0, 0, 0.03]}>
           <planeGeometry args={[1.4, 0.9]} />
           <meshStandardMaterial
-            emissive="#6c63ff"
-            emissiveIntensity={0.8}
-            color="#0a0a12"
+            map={tex}
+            emissiveMap={tex}
+            emissive="#ffffff"
+            emissiveIntensity={1.25}
             toneMapped={false}
           />
         </mesh>
@@ -160,33 +214,81 @@ function ServerRack() {
 }
 
 function Holograms() {
-  const g = useRef();
+  const root = useRef();
+  const orbits = useRef([]);
+  const core = useRef();
+
   useFrame((s, d) => {
-    if (g.current) g.current.rotation.y += d * 0.4;
+    const t = s.clock.elapsedTime;
+    if (root.current) root.current.rotation.y += d * 0.22;
+    if (core.current) core.current.scale.setScalar(1 + Math.sin(t * 2.2) * 0.06);
+    orbits.current.forEach((orbit, i) => {
+      if (!orbit) return;
+      orbit.rotation.y += d * (0.55 + i * 0.22);
+      orbit.rotation.z = Math.sin(t * 0.45 + i) * 0.08;
+    });
   });
+
+  const planets = [
+    { radius: 0.42, size: 0.045, color: "#00ff9c", speed: 0.7 },
+    { radius: 0.64, size: 0.06, color: "#6c63ff", speed: 0.5 },
+    { radius: 0.86, size: 0.05, color: "#00e5ff", speed: 0.38 },
+  ];
+
   return (
-    <group ref={g}>
-      {[0.5, 0.72, 0.94].map((r, i) => (
-        <mesh key={i} rotation={[Math.PI / 2 + i * 0.3, 0, 0]}>
-          <torusGeometry args={[r, 0.008, 12, 64]} />
+    <group ref={root} rotation={[0.08, 0, -0.14]} scale={0.72}>
+      <mesh ref={core}>
+        <sphereGeometry args={[0.14, 24, 24]} />
+        <meshStandardMaterial
+          color="#00e5ff"
+          emissive="#00e5ff"
+          emissiveIntensity={2.6}
+          toneMapped={false}
+        />
+      </mesh>
+
+      {planets.map((planet, i) => (
+        <group
+          key={planet.radius}
+          ref={(el) => (orbits.current[i] = el)}
+          rotation={[0.16 + i * 0.08, i * 0.7, 0]}
+        >
+          <mesh rotation={[Math.PI / 2, 0, 0]}>
+            <torusGeometry args={[planet.radius, 0.005, 8, 96]} />
+            <meshStandardMaterial
+              color={planet.color}
+              emissive={planet.color}
+              emissiveIntensity={0.75}
+              transparent
+              opacity={0.58}
+              toneMapped={false}
+            />
+          </mesh>
+          <mesh position={[planet.radius, 0, 0]}>
+            <sphereGeometry args={[planet.size, 18, 18]} />
+            <meshStandardMaterial
+              color={planet.color}
+              emissive={planet.color}
+              emissiveIntensity={1.8}
+              toneMapped={false}
+            />
+          </mesh>
+        </group>
+      ))}
+
+      {[-0.28, 0.28].map((y, i) => (
+        <mesh key={y} position={[0, y, 0]} rotation={[Math.PI / 2, 0, i ? 0.75 : -0.75]}>
+          <torusGeometry args={[0.22, 0.004, 8, 48]} />
           <meshStandardMaterial
-            color={i === 1 ? "#6c63ff" : "#00e5ff"}
-            emissive={i === 1 ? "#6c63ff" : "#00e5ff"}
-            emissiveIntensity={2}
+            color="#ffffff"
+            emissive="#6c63ff"
+            emissiveIntensity={0.9}
+            transparent
+            opacity={0.45}
             toneMapped={false}
           />
         </mesh>
       ))}
-      <mesh>
-        <icosahedronGeometry args={[0.22, 0]} />
-        <meshStandardMaterial
-          color="#00e5ff"
-          emissive="#00e5ff"
-          emissiveIntensity={1.4}
-          wireframe
-          toneMapped={false}
-        />
-      </mesh>
     </group>
   );
 }
@@ -389,8 +491,10 @@ export default function Workspace() {
 
       {/* ---------- interactive: KEYBOARD -> Terminal ---------- */}
       <Hotspot label="Terminal" sublabel="type a command" onSelect={() => openZone("terminal")}
-        position={[1.5, DESK_Y + 0.11, 0.7]} labelOffset={[0, 0.5, 0]} liftHeight={0.05}>
-        <Keyboard />
+        position={[1.18, DESK_Y + 0.11, 0.82]} labelOffset={[-0.02, 0.72, 0]} liftHeight={0.05}>
+        <group rotation={[0, -0.08, 0]}>
+          <Keyboard />
+        </group>
       </Hotspot>
 
       {/* ---------- interactive: SERVER RACK -> DevOps ---------- */}
@@ -408,9 +512,9 @@ export default function Workspace() {
       </Hotspot>
 
       {/* ---------- interactive: HOLOGRAMS -> Skills ---------- */}
-      <Float speed={2} rotationIntensity={0.4} floatIntensity={0.6}>
-        <Hotspot label="Solar System" sublabel="explore skills" onSelect={() => openZone("skills")}
-          position={[-1.9, DESK_Y + 1.4, 0.4]} labelOffset={[0, 1.1, 0]} liftHeight={0.15}>
+      <Float speed={1.4} rotationIntensity={0.16} floatIntensity={0.28}>
+        <Hotspot label="Skills" sublabel="explore skills" onSelect={() => openZone("skills")}
+          position={[-2.45, DESK_Y + 1.52, 0.18]} labelOffset={[-0.22, 0.72, 0]} liftHeight={0.1}>
           <Holograms />
         </Hotspot>
       </Float>

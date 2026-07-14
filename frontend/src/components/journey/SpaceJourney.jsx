@@ -23,6 +23,7 @@ export default function SpaceJourney() {
   const activeRef = useRef(0);
   const [active, setActive] = useState(0);
   const [started, setStarted] = useState(false);
+  const [deepDive, setDeepDive] = useState(null);
 
   // launch loader: boot animation -> mount canvas (generate textures) -> ready
   const [phase, setPhase] = useState("boot"); // boot | mounting | ready
@@ -39,7 +40,7 @@ export default function SpaceJourney() {
     progress.current = p;
     if (!started && p > 0.002) setStarted(true);
     const idx = Math.round(p * (STOPS.length - 1));
-    if (idx !== activeRef.current) { activeRef.current = idx; setActive(idx); }
+    if (idx !== activeRef.current) { activeRef.current = idx; setActive(idx); setDeepDive(null); }
   };
 
   const goTo = (i) => {
@@ -47,6 +48,9 @@ export default function SpaceJourney() {
     if (!el) return;
     const max = el.scrollHeight - el.clientHeight;
     el.scrollTo({ top: (i / (STOPS.length - 1)) * max, behavior: "smooth" });
+    activeRef.current = i;
+    setActive(i);
+    setDeepDive(null);
   };
 
   const stop = STOPS[active];
@@ -120,6 +124,26 @@ export default function SpaceJourney() {
           ))}
         </div>
 
+        <div className="pointer-events-auto absolute bottom-4 left-1/2 hidden max-w-[78vw] -translate-x-1/2 gap-2 overflow-x-auto border border-white/10 bg-black/45 p-2 backdrop-blur md:flex">
+          {STOPS.filter((s) => s.kind !== "galaxy").map((s, i) => (
+            <button
+              key={s.id}
+              type="button"
+              onClick={() => goTo(i)}
+              className="shrink-0 border px-3 py-2 font-mono text-[10px] uppercase tracking-[0.16em] transition hover:bg-white/10"
+              style={{
+                color: active === i ? "#fff" : s.accent,
+                borderColor: active === i ? s.accent : `${s.accent}66`,
+                background: active === i ? `${s.accent}22` : "transparent",
+                boxShadow: active === i ? `0 0 12px ${s.accent}55` : "none",
+              }}
+              data-cursor="hover"
+            >
+              {s.name}
+            </button>
+          ))}
+        </div>
+
         {/* start hint */}
         <AnimatePresence>
           {!started && (
@@ -167,6 +191,33 @@ export default function SpaceJourney() {
                     </div>
                   </>
                 )}
+                <div className="mt-5 flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setDeepDive(stop)}
+                    className="border px-4 py-2 font-mono text-[10px] uppercase tracking-[0.18em] text-white transition hover:bg-white/10"
+                    style={{ borderColor: stop.accent, background: `${stop.accent}22`, boxShadow: `0 0 14px ${stop.accent}44` }}
+                    data-cursor="hover"
+                  >
+                    Deep dive
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => goTo(Math.max(0, active - 1))}
+                    className="border border-white/15 px-4 py-2 font-mono text-[10px] uppercase tracking-[0.18em] text-white/70 transition hover:bg-white/10"
+                    data-cursor="hover"
+                  >
+                    Prev
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => goTo(Math.min(STOPS.length - 2, active + 1))}
+                    className="border border-white/15 px-4 py-2 font-mono text-[10px] uppercase tracking-[0.18em] text-white/70 transition hover:bg-white/10"
+                    data-cursor="hover"
+                  >
+                    Next
+                  </button>
+                </div>
                 {stop.lesson && (
                   <div className="mt-4 border-l-2 pl-3 text-sm italic text-white/70" style={{ borderColor: stop.accent }}>
                     “{stop.lesson}”
@@ -175,6 +226,10 @@ export default function SpaceJourney() {
               </div>
             </motion.div>
           )}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {deepDive && <DeepDiveScreen stop={deepDive} onClose={() => setDeepDive(null)} />}
         </AnimatePresence>
 
         {/* deep-space finale */}
@@ -208,7 +263,7 @@ export default function SpaceJourney() {
 function LaunchLoader() {
   const steps = [
     "Calibrating navigation array",
-    "Loading planetary surfaces",
+    "Loading journey scenes",
     "Charting route · 2023 → 2027",
     "Spooling ion engines",
   ];
@@ -258,6 +313,150 @@ function LaunchLoader() {
         <div className="mt-2 flex justify-between mono-id">
           <span>T-00 · LAUNCH SEQUENCE</span>
           <motion.span className="text-cyan" animate={{ opacity: [0.4, 1, 0.4] }} transition={{ repeat: Infinity, duration: 1.2 }}>READY</motion.span>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+const DEEP_PLANET = {
+  earth: {
+    surface: "radial-gradient(circle at 34% 28%, #f2fbff 0 5%, #66b8ff 6% 18%, #1f7fbd 19% 34%, #8a815f 35% 46%, #143c61 47% 68%, #050b12 69% 100%)",
+    glow: "#5fb0ff",
+  },
+  moon: {
+    surface: "radial-gradient(circle at 35% 28%, #ffffff 0 5%, #d8dbe2 6% 24%, #8f97a5 25% 45%, #414956 46% 68%, #080a0e 69% 100%)",
+    glow: "#c8ccd4",
+  },
+  iss: {
+    surface: "linear-gradient(135deg, #080b14 0%, #26365f 34%, #dce6ff 39%, #8b7bff 45%, #101526 55%, #05070c 100%)",
+    glow: "#8b7bff",
+  },
+  mars: {
+    surface: "radial-gradient(circle at 35% 28%, #ffd0ad 0 6%, #e17245 7% 27%, #9e3c24 28% 50%, #46140c 51% 72%, #070403 73% 100%)",
+    glow: "#d9603b",
+  },
+  jupiter: {
+    surface: "repeating-linear-gradient(168deg, #27180e 0 7%, #774b2f 7% 14%, #d8a06a 14% 22%, #e8c993 22% 30%, #5d3922 30% 38%)",
+    glow: "#d8a06a",
+  },
+  saturn: {
+    surface: "radial-gradient(circle at 38% 30%, #fff4d0 0 7%, #e8d29a 8% 30%, #a98b5f 31% 50%, #372719 51% 72%, #070503 73% 100%)",
+    glow: "#e8d29a",
+  },
+  uranus: {
+    surface: "radial-gradient(circle at 35% 28%, #ecffff 0 6%, #8be8f2 7% 30%, #4c98a8 31% 54%, #14333d 55% 74%, #03080b 75% 100%)",
+    glow: "#7fd6e6",
+  },
+  neptune: {
+    surface: "radial-gradient(circle at 35% 28%, #dbe8ff 0 6%, #5f83e8 7% 30%, #2746a8 31% 56%, #0a174e 57% 76%, #02040d 77% 100%)",
+    glow: "#4f7ae0",
+  },
+};
+
+const DEEP_IMAGE = {
+  earth: "https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?auto=format&fit=crop&w=1800&q=85",
+  moon: "https://images.unsplash.com/photo-1532693322450-2cb5c511067d?auto=format&fit=crop&w=1800&q=85",
+  iss: "https://images.unsplash.com/photo-1454789548928-9efd52dc4031?auto=format&fit=crop&w=1800&q=85",
+  mars: "https://images.unsplash.com/photo-1614728894747-a83421e2b9c9?auto=format&fit=crop&w=1800&q=85",
+  jupiter: "https://images.unsplash.com/photo-1462331940025-496dfbfc7564?auto=format&fit=crop&w=1800&q=85",
+  saturn: "https://images.unsplash.com/photo-1464802686167-b939a6910659?auto=format&fit=crop&w=1800&q=85",
+  uranus: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1800&q=85",
+  neptune: "https://images.unsplash.com/photo-1504333638930-c8787321eee0?auto=format&fit=crop&w=1800&q=85",
+};
+
+function SciFiCard({ stop, eyebrow, title, children, image, delay = 0, action, onAction }) {
+  return (
+    <motion.div
+      className="group relative min-h-64 overflow-hidden border bg-[#06101b]/78 p-5 backdrop-blur-xl"
+      style={{
+        "--mc": stop.accent,
+        borderColor: `${stop.accent}66`,
+        clipPath: "polygon(0 0, calc(100% - 26px) 0, 100% 26px, 100% 100%, 22px 100%, 0 calc(100% - 22px))",
+        boxShadow: `0 0 34px -18px ${stop.accent}, inset 0 0 0 1px rgba(255,255,255,0.04)`,
+      }}
+      initial={{ opacity: 0, y: 34, scale: 0.97 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ delay, type: "spring", stiffness: 210, damping: 24 }}
+    >
+      <div className="absolute inset-0 opacity-52" style={{ backgroundImage: `url(${image})`, backgroundSize: "cover", backgroundPosition: "center" }} />
+      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(2,4,10,0.16),rgba(2,4,10,0.86)_62%,rgba(2,4,10,0.96)),radial-gradient(circle_at_78%_22%,rgba(255,255,255,0.12),transparent_24%)]" />
+      <div className="absolute inset-x-5 top-4 h-px" style={{ background: `linear-gradient(90deg, ${stop.accent}, transparent)` }} />
+      <div className="absolute bottom-4 right-5 h-px w-24" style={{ background: `linear-gradient(90deg, transparent, ${stop.accent})` }} />
+
+      <div className="relative flex min-h-52 flex-col">
+        <div className="font-mono text-[10px] uppercase tracking-[0.22em]" style={{ color: stop.accent }}>{eyebrow}</div>
+        <h3 className="mt-1 font-display text-2xl font-semibold uppercase tracking-wide">{title}</h3>
+        <div className="mt-auto pt-8 text-sm leading-relaxed text-white/78">{children}</div>
+        {action && (
+          <button
+            type="button"
+            onClick={onAction}
+            className="mt-5 border px-4 py-2 font-mono text-[10px] uppercase tracking-[0.18em] text-white transition hover:bg-white/10"
+            style={{ borderColor: `${stop.accent}AA`, background: `${stop.accent}16` }}
+            data-cursor="hover"
+          >
+            {action}
+          </button>
+        )}
+      </div>
+    </motion.div>
+  );
+}
+
+function DeepDiveScreen({ stop, onClose }) {
+  const heroImage = DEEP_IMAGE[stop.id] || DEEP_IMAGE.earth;
+
+  return (
+    <motion.div
+      className="pointer-events-auto absolute inset-0 z-40 overflow-hidden bg-[#02040A]"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.35 }}
+    >
+      <motion.div
+        className="absolute inset-0"
+        initial={{ scale: 1.28, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 1.12, opacity: 0 }}
+        transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
+      >
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_72%_18%,rgba(255,255,255,0.16),transparent_18%),radial-gradient(circle_at_20%_70%,rgba(0,229,255,0.08),transparent_28%)]" />
+        <div className="absolute inset-0 opacity-45" style={{ backgroundImage: `url(${heroImage})`, backgroundSize: "cover", backgroundPosition: "center" }} />
+        <div className="absolute inset-0 bg-[#02040A]/40" />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(2,4,10,0.74)_0%,rgba(2,4,10,0.56)_42%,rgba(2,4,10,0.88)_100%)]" />
+      </motion.div>
+
+      <div className="relative z-10 flex h-full flex-col overflow-y-auto p-5 md:p-8">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <div className="mono-id" style={{ color: stop.accent }}>{stop.year} // {stop.theme}</div>
+            <h1 className="mt-2 font-display text-4xl font-semibold md:text-6xl">{stop.name}</h1>
+          </div>
+          <button onClick={onClose} className="hud-icon" aria-label="Close deep dive" data-cursor="hover"><X size={16} /></button>
+        </div>
+
+        <div className="mt-10 grid gap-4 pb-8 md:ml-auto md:w-[min(920px,66vw)] md:grid-cols-2 xl:grid-cols-3">
+          <SciFiCard stop={stop} eyebrow="Mission Overview" title={stop.name} image={heroImage} delay={0.18} action="Continue timeline" onAction={onClose}>
+            {stop.detail}
+          </SciFiCard>
+
+          <SciFiCard stop={stop} eyebrow="Skill Module" title="Capabilities" image={DEEP_IMAGE.jupiter} delay={0.26}>
+            <div className="flex flex-wrap gap-2">
+              {stop.skills.map((s) => <span key={s} className="chip">{s}</span>)}
+            </div>
+          </SciFiCard>
+
+          <SciFiCard stop={stop} eyebrow="Milestones" title="Progress Log" image={DEEP_IMAGE.saturn} delay={0.34}>
+            <div className="flex flex-wrap gap-2">
+              {stop.projects.map((p) => <span key={p} className="rounded-sm px-2 py-1 text-xs font-medium" style={{ color: stop.accent, background: `${stop.accent}18` }}>{p}</span>)}
+            </div>
+          </SciFiCard>
+
+          <SciFiCard stop={stop} eyebrow="Experience Log" title="Lesson" image={DEEP_IMAGE.iss} delay={0.42} action="Close deep dive" onAction={onClose}>
+            <span className="italic">"{stop.lesson || "Still in progress."}"</span>
+          </SciFiCard>
         </div>
       </div>
     </motion.div>
