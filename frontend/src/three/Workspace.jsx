@@ -98,10 +98,10 @@ function Keyboard() {
           <planeGeometry args={[0.9, 0.25]} />
           <meshStandardMaterial color="#021014" emissive="#00e5ff" emissiveIntensity={0.22} toneMapped={false} />
         </mesh>
-        {["$ npm run dev", "> vite ready", "open projects --all"].map((line, i) => (
-          <group key={line} position={[-0.34, 0.085 - i * 0.072, 0.045]}>
+        {[0.34, 0.28, 0.22].map((width, i) => (
+          <group key={i} position={[-0.23 + width / 2, 0.078 - i * 0.068, 0.045]}>
             <mesh>
-              <boxGeometry args={[0.44 - i * 0.055, 0.016, 0.01]} />
+              <boxGeometry args={[width, 0.014, 0.01]} />
               <meshStandardMaterial color={i === 0 ? "#00ff9c" : "#00e5ff"} emissive={i === 0 ? "#00ff9c" : "#00e5ff"} emissiveIntensity={0.8 - i * 0.12} toneMapped={false} />
             </mesh>
           </group>
